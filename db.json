@@ -1,0 +1,142 @@
+{
+  "products": [
+    {
+      "id": "4",
+      "name": "Product 4",
+      "price": 14.99,
+      "image": "https://picsum.photos/id/13/300/300",
+      "description": "This is product 4",
+      "discount": 0.2,
+      "quantity": 75,
+      "featured": true
+    },
+    {
+      "id": "5",
+      "name": "Product 5",
+      "price": 9.99,
+      "image": "https://picsum.photos/id/14/300/300",
+      "description": "This is product 5",
+      "discount": 0,
+      "quantity": 150,
+      "featured": false
+    },
+    {
+      "id": "6",
+      "name": "Product 6",
+      "price": 7.99,
+      "image": "https://picsum.photos/id/15/300/300",
+      "description": "This is product 6",
+      "discount": 0.15,
+      "quantity": 100,
+      "featured": false
+    },
+    {
+      "id": "7",
+      "name": "Product 7",
+      "price": 12.99,
+      "image": "https://picsum.photos/id/16/300/300",
+      "description": "This is product 7",
+      "discount": 0,
+      "quantity": 50,
+      "featured": true
+    },
+    {
+      "id": "8",
+      "name": "Product 8",
+      "price": 17.99,
+      "image": "https://picsum.photos/id/17/300/300",
+      "description": "This is product 8",
+      "discount": 0.1,
+      "quantity": 80,
+      "featured": true
+    },
+    {
+      "id": "9",
+      "name": "Product 9",
+      "price": 6.99,
+      "image": "https://picsum.photos/id/18/300/300",
+      "description": "This is product 9",
+      "discount": 0,
+      "quantity": 120,
+      "featured": false
+    },
+    {
+      "id": "10",
+      "name": "Product 10",
+      "price": 11.99,
+      "image": "https://picsum.photos/id/19/300/300",
+      "description": "This is product 10",
+      "discount": 0.25,
+      "quantity": 90,
+      "featured": true
+    }
+  ],
+  "users": [
+    {
+      "email": "thuong@gmail.com",
+      "password": "$2a$10$lP/cFJHU0HGee.ztbjXJOOob6f4HR4CpNkh8uIcKRLom1zbZOpsg2",
+      "id": 1
+    },
+    {
+      "email": "thuong44@gmail.com",
+      "password": "$2a$10$p4v1bkOI7P0hTwFcorcGyueMjfQ/gJUg1B6J3zG.PIITo3uQ9Eb4O",
+      "id": 2
+    },
+    {
+      "email": "thuon1g@gmail.com",
+      "password": "$2a$10$T.DA2/m4M7mJVnGxHAOzgu.407h/iMS1RQ0qrailMbySpi68J0KWK",
+      "id": 3
+    },
+    {
+      "email": "thuong1111111@gmail.com",
+      "password": "$2a$10$p5jCOdMfbMSfH1oy0TD7geqX4o7aT6YfDT0qkTJQNPGH9DMG3LoLq",
+      "id": 4
+    },
+    {
+      "email": "thuon2g@gmail.com",
+      "password": "$2a$10$kLKTXWIpGhmhxWR0LSocw.3Mq.U9JNgk1IYRWwCtvdumZFhL9CkZu",
+      "id": 5
+    },
+    {
+      "email": "thuong111111111111@gmail.com",
+      "password": "$2a$10$QC3R7O/HzSv2m35BCfTtgOF7kKMRP39JAFiAyoYrpyXwBDG8r/pbO",
+      "id": 6
+    },
+    {
+      "email": "thuong13@gmail.com",
+      "password": "$2a$10$gKdosLUJXq0C2YGJa9gom.AQkcNe.cj0VGZiu7G8NZ3OJvJjtay5G",
+      "confirmPassword": "123456",
+      "id": 7
+    },
+    {
+      "email": "thuong18@gmail.com",
+      "password": "$2a$10$331tWTpJm6YpVa.yFwh4zOUhoYQ5MWrAo16qAtCfr3ZiauAGtr3ea",
+      "confirmPassword": "123456",
+      "id": 8
+    },
+    {
+      "email": "thuong19@gmail.com",
+      "password": "$2a$10$gg5ZRTxet9WczUUPYqN/3uPV9JHcwrL.zcKg7s88tm3vi3BecD4/K",
+      "confirmPassword": "123456",
+      "id": 9
+    },
+    {
+      "email": "thuong55@gmail.com",
+      "password": "$2a$10$5RCDBS6QgSEf.UTr3Pp2geJCUpoEfY7EajS0mRBAjGffl1NzO8aOu",
+      "confirmPassword": "123456",
+      "id": 10
+    },
+    {
+      "email": "thuong124@gmail.com",
+      "password": "$2a$10$K.qdQa9tyOTOJUxS.clfS.vuCEVSkz73VVtVKCSj5boWdOdjtW4QG",
+      "confirmPassword": "123456",
+      "id": 11
+    },
+    {
+      "email": "nhung@gmail.com",
+      "password": "$2a$10$DFI2JKqeDl4lveo5ZpkXF.qqTTpbK2PxAX9.aecoPFUmR5iDUOs5a",
+      "confirmPassword": "123456789",
+      "id": 12
+    }
+  ]
+}
