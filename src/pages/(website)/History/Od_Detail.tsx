@@ -5,11 +5,9 @@ import { Input, message, Modal } from "antd";
 import axiosInstance from "../../../configs/axios";
 
 const Od_Detail = () => {
-    // State để theo dõi tab hiện tại
     const { id } = useParams<{ id: string }>();
     const [activeTab, setActiveTab] = useState("details"); // Mặc định là 'details'
 
-    // Hàm để chuyển tab
     const handleTabClick = (tab: string) => {
         setActiveTab(tab);
     };
@@ -30,10 +28,19 @@ const Od_Detail = () => {
     const [totalPages, setTotalPages] = useState<number>(1);
     const [error, setError] = useState<string | null>(null);
     const [isModalVisible, setIsModalVisible] = useState(false);
-    const [cancelOrderId, setCancelOrderId] = useState<number | null>(null); // Lưu id của đơn hàng cần hủy
-    const [cancelReason, setCancelReason] = useState<string>(""); // Lý do hủy đơn hàng
-    const perPage = 5;
+    const [cancelOrderId, setCancelOrderId] = useState<number | null>(null);
+    const [cancelReason, setCancelReason] = useState<string>("");
+    const perPage = 1000;
     const navigate = useNavigate();
+
+    // Chuyển thời gian sang múi giờ +7
+    const convertToTimezone = (timeString: string) => {
+        const date = new Date(timeString);
+        return date.toLocaleString("vi-VN", {
+            timeZone: "Asia/Ho_Chi_Minh",
+            hour12: false, // Hiển thị thời gian 24 giờ
+        });
+    };
 
     useEffect(() => {
         const token = localStorage.getItem("authToken");
@@ -43,7 +50,6 @@ const Od_Detail = () => {
             return;
         }
 
-        // Gọi API lấy danh sách đơn hàng
         const loadOrderDetails = async () => {
             try {
                 const { data, total_pages } = await fetchOrders(page, perPage);
@@ -60,39 +66,35 @@ const Od_Detail = () => {
         loadOrderDetails();
     }, [navigate, id, page, perPage]);
 
-    // Hàm hiển thị modal và lưu id đơn hàng cần hủy
     const showCancelModal = (orderId: number) => {
         setCancelOrderId(orderId);
         setIsModalVisible(true);
     };
 
-    // Hàm hủy đơn hàng
     const handleCancelOrder = async () => {
         if (!cancelOrderId) {
             message.error("Đơn hàng không hợp lệ.");
             return;
         }
 
-        // Kiểm tra nếu lý do hủy đơn hàng trống
         if (!cancelReason.trim()) {
             message.error("Lý do hủy không được để trống.");
             return;
         }
 
         try {
-            const token = localStorage.getItem("authToken"); // Lấy token từ localStorage
+            const token = localStorage.getItem("authToken");
             if (!token) {
                 message.error("Bạn chưa đăng nhập.");
                 return;
             }
-            // Gọi API GET để hủy đơn hàng với `cancel_id`
             const response = await axiosInstance.get(`/purchasedOrders`, {
                 headers: {
-                    Authorization: `Bearer ${token}`, // Gửi token trong headers
+                    Authorization: `Bearer ${token}`,
                 },
                 params: {
-                    cancel_id: cancelOrderId, // Truyền cancel_id lên API
-                    note: cancelReason, // Không bắt buộc gửi note, chỉ kiểm tra
+                    cancel_id: cancelOrderId,
+                    note: cancelReason,
                 },
             });
 
@@ -100,21 +102,19 @@ const Od_Detail = () => {
                 response.data.message || "Đơn hàng đã hủy thành công.",
             );
             setIsModalVisible(false);
-            setCancelReason(""); // Xóa lý do đã nhập
+            setCancelReason("");
         } catch (error) {
             message.error("Không thể hủy đơn hàng.");
         }
     };
 
-    // Hàm xử lý khi người dùng nhập lý do hủy
     const handleReasonChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setCancelReason(e.target.value);
     };
 
-    // Hàm xử lý khi người dùng nhấn nút xác nhận
     const handleConfirmReceived = async (orderId: number) => {
         try {
-            const token = localStorage.getItem("authToken"); // Lấy token từ localStorage
+            const token = localStorage.getItem("authToken");
             if (!token) {
                 message.error("Bạn chưa đăng nhập.");
                 return;
@@ -124,14 +124,13 @@ const Od_Detail = () => {
                     complete_id: orderId,
                 },
                 headers: {
-                    Authorization: `Bearer ${token}`, // Gửi token trong headers
+                    Authorization: `Bearer ${token}`,
                 },
             });
 
             if (response.status === 200) {
                 message.success(response.data.message);
 
-                // Cập nhật trạng thái đơn hàng trong state
                 setOrders((prevOrders) =>
                     prevOrders.map((order) =>
                         order.id === orderId
@@ -147,7 +146,6 @@ const Od_Detail = () => {
         }
     };
 
-    // Hàm tính tổng giá trị đơn hàng
     const calculateTotalPrice = (order: Order) => {
         return order.order_detail.reduce((total, item) => {
             return total + item.selling_price * item.quantity;
@@ -167,7 +165,7 @@ const Od_Detail = () => {
             <section className="flat-spacing-11">
                 <div className="col-lg-15">
                     {orders.map((order) => (
-                        <div className="wd-form-order">
+                        <div className="wd-form-order" key={order.id}>
                             <div className="order-head">
                                 <figure className="img-product">
                                     <img
@@ -180,7 +178,6 @@ const Od_Detail = () => {
                                     />
                                 </figure>
                                 <div className="content">
-                                    {/* <div className="badge">Đang giao hàng</div> */}
                                     <h6 className="mt-2 fw-5">
                                         Đơn hàng #{order.id}
                                     </h6>
@@ -192,7 +189,7 @@ const Od_Detail = () => {
                                         Thời gian đặt hàng
                                     </div>
                                     <div className="text-2 mt_4 fw-6">
-                                        {order.created_at}
+                                        {convertToTimezone(order.created_at)}
                                     </div>
                                 </div>
                                 <div className="item">
@@ -222,7 +219,6 @@ const Od_Detail = () => {
                             </div>
                             <div className="widget-tabs style-has-border widget-order-tab">
                                 <ul className="widget-menu-tab">
-                                    {/* Tab Chi tiết đơn hàng */}
                                     <li
                                         className={`item-title ${activeTab === "details" ? "active" : ""}`}
                                         onClick={() =>
@@ -233,8 +229,6 @@ const Od_Detail = () => {
                                             Chi tiết đơn hàng
                                         </span>
                                     </li>
-
-                                    {/* Tab Lịch sử đơn hàng */}
                                     <li
                                         className={`item-title ${activeTab === "history" ? "active" : ""}`}
                                         onClick={() =>
@@ -248,7 +242,6 @@ const Od_Detail = () => {
                                 </ul>
 
                                 <div className="widget-content-tab">
-                                    {/* Nội dung tab Chi tiết đơn hàng */}
                                     {activeTab === "details" && (
                                         <div className="widget-content-inner active">
                                             {order.order_detail.map((item) => (
@@ -266,7 +259,6 @@ const Od_Detail = () => {
                                                                 "center",
                                                         }}
                                                     >
-                                                        {/* Phần thông tin sản phẩm */}
                                                         <div
                                                             className="product-info"
                                                             style={{
@@ -327,7 +319,6 @@ const Od_Detail = () => {
                                                             </div>
                                                         </div>
 
-                                                        {/* Phần giá và số lượng */}
                                                         <div
                                                             className="product-price-quantity"
                                                             style={{
@@ -346,7 +337,14 @@ const Od_Detail = () => {
                                                             >
                                                                 x{item.quantity}
                                                             </div>
-                                                            <div className="price">
+                                                            <div
+                                                                className="price"
+                                                                style={{
+                                                                    textAlign:
+                                                                        "right",
+                                                                    width: "600px",
+                                                                }}
+                                                            >
                                                                 <span
                                                                     style={{
                                                                         color: "red",
@@ -400,260 +398,217 @@ const Od_Detail = () => {
                                         </div>
                                     )}
 
-                                    {/* Nội dung tab Lịch sử đơn hàng */}
                                     {activeTab === "history" && (
                                         <div className="widget-content-tab">
-                                            {/* Nội dung tab Lịch sử đơn hàng */}
-                                            {activeTab === "history" && (
-                                                <div className="widget-content-inner active">
-                                                    <div className="widget-timeline">
-                                                        <ul className="timeline">
-                                                            {/* Kiểm tra nếu đơn hàng đã bị hủy */}
-                                                            {Number(
-                                                                order.status,
-                                                            ) === 7 ? (
-                                                                // Khi đơn hàng bị hủy, chỉ hiển thị trạng thái "Đã hủy"
-                                                                <li>
-                                                                    <div className="timeline-badge success"></div>
-                                                                    <div className="timeline-box">
-                                                                        <a
-                                                                            className="timeline-panel"
-                                                                            href="javascript:void(0);"
+                                            <div className="widget-content-inner active">
+                                                <div className="widget-timeline">
+                                                    <ul className="timeline">
+                                                        {Number(
+                                                            order.status,
+                                                        ) === 7 ? (
+                                                            <li>
+                                                                <div className="timeline-badge success"></div>
+                                                                <div className="timeline-box">
+                                                                    <a
+                                                                        className="timeline-panel"
+                                                                        href="javascript:void(0);"
+                                                                    >
+                                                                        <div
+                                                                            className="text-2 fw-6"
+                                                                            style={{
+                                                                                color: "green",
+                                                                            }}
                                                                         >
-                                                                            <div
-                                                                                className="text-2 fw-6"
-                                                                                style={{
-                                                                                    color: "green",
-                                                                                }}
-                                                                            >
-                                                                                {
-                                                                                    orderStatusMap[7]
-                                                                                }
-                                                                            </div>
-                                                                            <span>
-                                                                                {
-                                                                                    order.updated_at
-                                                                                }
-                                                                            </span>
-                                                                        </a>
-                                                                    </div>
-                                                                </li>
-                                                            ) : (
-                                                                // Khi đơn hàng chưa bị hủy, hiển thị các trạng thái bình thường
-                                                                Object.keys(
-                                                                    orderStatusMap,
-                                                                ).map((key) => {
-                                                                    const statusKey =
-                                                                        Number(
-                                                                            key,
-                                                                        );
-                                                                    const currentStatus =
-                                                                        Number(
-                                                                            order.status,
-                                                                        );
-
-                                                                    // Không hiển thị trạng thái "Đã hủy" (7) nếu đơn hàng chưa bị hủy
-                                                                    if (
-                                                                        statusKey ===
-                                                                        7
-                                                                    )
-                                                                        return null;
-
-                                                                    // Ẩn trạng thái "Giao hàng thất bại" (5) trừ khi status từ backend là 5
-                                                                    if (
-                                                                        statusKey ===
-                                                                            5 &&
-                                                                        currentStatus !==
-                                                                            5
-                                                                    )
-                                                                        return null;
-
-                                                                    // Ẩn "Giao hàng thành công" (4) và "Hoàn thành" (6) khi có "Giao hàng thất bại" (5)
-                                                                    if (
-                                                                        currentStatus ===
-                                                                            5 &&
-                                                                        (statusKey ===
-                                                                            4 ||
-                                                                            statusKey ===
-                                                                                6)
-                                                                    )
-                                                                        return null;
-
-                                                                    const isCompleted =
-                                                                        statusKey <=
-                                                                        currentStatus;
-
-                                                                    return (
-                                                                        <li
-                                                                            key={
-                                                                                statusKey
+                                                                            {
+                                                                                orderStatusMap[7]
                                                                             }
-                                                                        >
-                                                                            <div
-                                                                                className={`timeline-badge ${isCompleted ? "success" : ""}`}
-                                                                            ></div>
-                                                                            <div className="timeline-box">
-                                                                                <a
-                                                                                    className="timeline-panel"
-                                                                                    href="javascript:void(0);"
-                                                                                >
-                                                                                    <div
-                                                                                        className="text-2 fw-6"
-                                                                                        style={{
-                                                                                            color: isCompleted
-                                                                                                ? "green"
-                                                                                                : "gray", // Màu cho trạng thái đã hoàn thành
-                                                                                        }}
-                                                                                    >
-                                                                                        {
-                                                                                            orderStatusMap[
-                                                                                                statusKey
-                                                                                            ]
-                                                                                        }
-                                                                                    </div>
-                                                                                    {isCompleted && (
-                                                                                        <span>
-                                                                                            {
-                                                                                                order.updated_at
-                                                                                            }
-                                                                                        </span>
-                                                                                    )}
-                                                                                </a>
-                                                                            </div>
-                                                                        </li>
+                                                                        </div>
+                                                                        <span>
+                                                                            {
+                                                                                order.updated_at
+                                                                            }
+                                                                        </span>
+                                                                    </a>
+                                                                </div>
+                                                            </li>
+                                                        ) : (
+                                                            Object.keys(
+                                                                orderStatusMap,
+                                                            ).map((key) => {
+                                                                const statusKey =
+                                                                    Number(key);
+                                                                const currentStatus =
+                                                                    Number(
+                                                                        order.status,
                                                                     );
-                                                                })
-                                                            )}
 
-                                                            {/* Nút hủy đơn chỉ hiện khi trạng thái là "Đang chờ xác nhận" */}
-                                                            {Number(
-                                                                order.status,
-                                                            ) === 1 && (
-                                                                <div
-                                                                    style={{
-                                                                        textAlign:
-                                                                            "right",
-                                                                        marginTop:
-                                                                            "10px",
-                                                                    }}
-                                                                >
-                                                                    <a
-                                                                        className="view-btn"
-                                                                        style={{
-                                                                            backgroundColor:
-                                                                                "black",
-                                                                            color: "white",
-                                                                            padding:
-                                                                                "10px",
-                                                                            cursor: "pointer",
-                                                                            width: "120px",
-                                                                            display:
-                                                                                "inline-block",
-                                                                            textAlign:
-                                                                                "center",
-                                                                        }}
-                                                                        onClick={() =>
-                                                                            showCancelModal(
-                                                                                order.id,
-                                                                            )
-                                                                        }
-                                                                    >
-                                                                        Hủy đơn
-                                                                        hàng
-                                                                    </a>
-                                                                </div>
-                                                            )}
-                                                            {/* Nút xác nhận chỉ hiện khi trạng thái là "Giao hàng thành công" */}
-                                                            {Number(
-                                                                order.status,
-                                                            ) === 4 && (
-                                                                <div
-                                                                    style={{
-                                                                        textAlign:
-                                                                            "right",
-                                                                        marginTop:
-                                                                            "10px",
-                                                                    }}
-                                                                >
-                                                                    <a
-                                                                        className="view-btn"
-                                                                        style={{
-                                                                            backgroundColor:
-                                                                                "black",
-                                                                            color: "white",
-                                                                            padding:
-                                                                                "10px",
-                                                                            cursor: "pointer",
-                                                                            width: "120px",
-                                                                            display:
-                                                                                "inline-block",
-                                                                            textAlign:
-                                                                                "center",
-                                                                        }}
-                                                                        onClick={() =>
-                                                                            handleConfirmReceived(
-                                                                                order.id,
-                                                                            )
-                                                                        }
-                                                                    >
-                                                                        Đã nhận
-                                                                        được
-                                                                        hàng
-                                                                    </a>
-                                                                </div>
-                                                            )}
-                                                        </ul>
-
-                                                        {/* Modal hủy đơn hàng */}
-                                                        <Modal
-                                                            title="Lý do hủy đơn hàng"
-                                                            open={
-                                                                isModalVisible
-                                                            }
-                                                            onOk={
-                                                                handleCancelOrder
-                                                            }
-                                                            onCancel={() =>
-                                                                setIsModalVisible(
-                                                                    false,
+                                                                if (
+                                                                    statusKey ===
+                                                                    7
                                                                 )
+                                                                    return null;
+                                                                if (
+                                                                    statusKey ===
+                                                                        5 &&
+                                                                    currentStatus !==
+                                                                        5
+                                                                )
+                                                                    return null;
+                                                                if (
+                                                                    currentStatus ===
+                                                                        5 &&
+                                                                    (statusKey ===
+                                                                        4 ||
+                                                                        statusKey ===
+                                                                            6)
+                                                                )
+                                                                    return null;
+
+                                                                const isCompleted =
+                                                                    statusKey <=
+                                                                    currentStatus;
+
+                                                                return (
+                                                                    <li
+                                                                        key={
+                                                                            statusKey
+                                                                        }
+                                                                    >
+                                                                        <div
+                                                                            className={`timeline-badge ${isCompleted ? "success" : ""}`}
+                                                                        ></div>
+                                                                        <div className="timeline-box">
+                                                                            <a
+                                                                                className="timeline-panel"
+                                                                                href="javascript:void(0);"
+                                                                            >
+                                                                                <div
+                                                                                    className="text-2 fw-6"
+                                                                                    style={{
+                                                                                        color: isCompleted
+                                                                                            ? "green"
+                                                                                            : "gray",
+                                                                                    }}
+                                                                                >
+                                                                                    {
+                                                                                        orderStatusMap[
+                                                                                            statusKey
+                                                                                        ]
+                                                                                    }
+                                                                                </div>
+                                                                                {isCompleted && (
+                                                                                    <span>
+                                                                                        {
+                                                                                            order.updated_at
+                                                                                        }
+                                                                                    </span>
+                                                                                )}
+                                                                            </a>
+                                                                        </div>
+                                                                    </li>
+                                                                );
+                                                            })
+                                                        )}
+
+                                                        {Number(
+                                                            order.status,
+                                                        ) === 1 && (
+                                                            <div
+                                                                style={{
+                                                                    textAlign:
+                                                                        "right",
+                                                                    marginTop:
+                                                                        "10px",
+                                                                }}
+                                                            >
+                                                                <a
+                                                                    className="view-btn"
+                                                                    style={{
+                                                                        backgroundColor:
+                                                                            "black",
+                                                                        color: "white",
+                                                                        padding:
+                                                                            "10px",
+                                                                        cursor: "pointer",
+                                                                        width: "120px",
+                                                                        display:
+                                                                            "inline-block",
+                                                                        textAlign:
+                                                                            "center",
+                                                                    }}
+                                                                    onClick={() =>
+                                                                        showCancelModal(
+                                                                            order.id,
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    Hủy đơn hàng
+                                                                </a>
+                                                            </div>
+                                                        )}
+
+                                                        {Number(
+                                                            order.status,
+                                                        ) === 4 && (
+                                                            <div
+                                                                style={{
+                                                                    textAlign:
+                                                                        "right",
+                                                                    marginTop:
+                                                                        "10px",
+                                                                }}
+                                                            >
+                                                                <a
+                                                                    className="view-btn"
+                                                                    style={{
+                                                                        backgroundColor:
+                                                                            "black",
+                                                                        color: "white",
+                                                                        padding:
+                                                                            "10px",
+                                                                        cursor: "pointer",
+                                                                        width: "120px",
+                                                                        display:
+                                                                            "inline-block",
+                                                                        textAlign:
+                                                                            "center",
+                                                                    }}
+                                                                    onClick={() =>
+                                                                        handleConfirmReceived(
+                                                                            order.id,
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    Đã nhận được
+                                                                    hàng
+                                                                </a>
+                                                            </div>
+                                                        )}
+                                                    </ul>
+
+                                                    <Modal
+                                                        title="Lý do hủy đơn hàng"
+                                                        open={isModalVisible}
+                                                        onOk={handleCancelOrder}
+                                                        onCancel={() =>
+                                                            setIsModalVisible(
+                                                                false,
+                                                            )
+                                                        }
+                                                        okText="Xác nhận"
+                                                        cancelText="Hủy"
+                                                    >
+                                                        <Input.TextArea
+                                                            value={cancelReason}
+                                                            onChange={
+                                                                handleReasonChange
                                                             }
-                                                            okText="Xác nhận"
-                                                            cancelText="Hủy"
-                                                        >
-                                                            <Input.TextArea
-                                                                value={
-                                                                    cancelReason
-                                                                }
-                                                                onChange={
-                                                                    handleReasonChange
-                                                                }
-                                                                placeholder="Nhập lý do hủy đơn hàng"
-                                                                rows={4}
-                                                            />
-                                                        </Modal>
-                                                    </div>
+                                                            placeholder="Nhập lý do hủy đơn hàng"
+                                                            rows={4}
+                                                        />
+                                                    </Modal>
                                                 </div>
-                                            )}
-                                            <Modal
-                                                title="Lý do hủy đơn hàng"
-                                                open={isModalVisible}
-                                                onOk={handleCancelOrder}
-                                                onCancel={() =>
-                                                    setIsModalVisible(false)
-                                                }
-                                                okText="Xác nhận"
-                                                cancelText="Hủy"
-                                            >
-                                                <Input.TextArea
-                                                    value={cancelReason}
-                                                    onChange={
-                                                        handleReasonChange
-                                                    }
-                                                    placeholder="Nhập lý do hủy đơn hàng"
-                                                    rows={4}
-                                                />
-                                            </Modal>
+                                            </div>
                                         </div>
                                     )}
                                 </div>
