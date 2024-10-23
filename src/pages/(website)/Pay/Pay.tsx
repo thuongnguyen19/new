@@ -80,7 +80,6 @@ const Pay: React.FC = () => {
                     const { productpayment, totalAmount, user } =
                         response.data.data;
 
-                    // Cập nhật thông tin người dùng từ API
                     if (user) {
                         setName(user.name || "");
                         setEmail(user.email || "");
@@ -103,6 +102,41 @@ const Pay: React.FC = () => {
         fetchInformationOrder();
     }, [location.state, navigate]);
 
+    const validateForm = () => {
+        const phoneRegex = /^(0|\+84)[35789]\d{8}$/; 
+   const emailRegex = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z]{2,}$/;
+
+
+        if (!name.trim()) {
+            message.error("Họ và tên không được để trống");
+            return false;
+        }
+
+        if (!emailRegex.test(email)) {
+            message.error("Email không hợp lệ");
+            return false;
+        }
+
+        if (!phoneRegex.test(phoneNumber)) {
+            message.error(
+                "Số điện thoại phải là số hợp lệ của Việt Nam (10 số)",
+            );
+            return false;
+        }
+
+        if (!address.trim()) {
+            message.error("Địa chỉ không được để trống");
+            return false;
+        }
+
+        if (paymentRole === null) {
+            message.error("Vui lòng chọn phương thức thanh toán.");
+            return false;
+        }
+
+        return true;
+    };
+
     const handlePaymentChange = (
         event: React.ChangeEvent<HTMLInputElement>,
     ) => {
@@ -118,8 +152,7 @@ const Pay: React.FC = () => {
             return;
         }
 
-        if (paymentRole === null) {
-            message.error("Vui lòng chọn phương thức thanh toán.");
+        if (!validateForm()) {
             return;
         }
 
@@ -195,7 +228,6 @@ const Pay: React.FC = () => {
                                                 id="first-name"
                                                 placeholder="Nguyễn Văn A"
                                                 value={name}
-                                                readOnly
                                                 onChange={(e) =>
                                                     setName(e.target.value)
                                                 }
@@ -208,7 +240,6 @@ const Pay: React.FC = () => {
                                             type="email"
                                             id="email"
                                             value={email}
-                                            readOnly
                                             onChange={(e) =>
                                                 setEmail(e.target.value)
                                             }
@@ -219,10 +250,9 @@ const Pay: React.FC = () => {
                                             Số điện thoại
                                         </label>
                                         <input
-                                            type="number"
+                                            type="text"
                                             id="phonenumber"
                                             value={phoneNumber}
-                                            readOnly
                                             onChange={(e) =>
                                                 setPhoneNumber(e.target.value)
                                             }
@@ -234,7 +264,6 @@ const Pay: React.FC = () => {
                                             type="text"
                                             id="address"
                                             value={address}
-                                            readOnly
                                             onChange={(e) =>
                                                 setAddress(e.target.value)
                                             }
@@ -255,13 +284,14 @@ const Pay: React.FC = () => {
                                         Đơn hàng của bạn
                                     </h5>
                                     <div className="pay-page">
-                                        <h5>Thông tin sản phẩm</h5>
+                                        {/* Thông tin sản phẩm */}
                                         <table
                                             style={{
                                                 width: "100%",
                                                 borderCollapse: "collapse",
                                             }}
                                         >
+                                            {/* Table head */}
                                             <thead>
                                                 <tr>
                                                     <th
@@ -309,6 +339,7 @@ const Pay: React.FC = () => {
                                                     </th>
                                                 </tr>
                                             </thead>
+                                            {/* Table body */}
                                             <tbody>
                                                 {paymentProducts.length > 0 ? (
                                                     paymentProducts.map(
