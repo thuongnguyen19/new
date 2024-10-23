@@ -37,7 +37,9 @@ const Pay: React.FC = () => {
     const [loading, setLoading] = useState<boolean>(true);
     const [name, setName] = useState<string>("");
     const [email, setEmail] = useState<string>("");
-    const [paymentRole, setPaymentRole] = useState<number | null>(null); // Không đặt mặc định
+    const [phoneNumber, setPhoneNumber] = useState<string>("");
+    const [address, setAddress] = useState<string>("");
+    const [paymentRole, setPaymentRole] = useState<number | null>(null);
 
     const location = useLocation();
     const navigate = useNavigate();
@@ -49,12 +51,6 @@ const Pay: React.FC = () => {
             navigate("/login");
             return;
         }
-
-        const savedName = localStorage.getItem("name");
-        const savedEmail = localStorage.getItem("email");
-
-        if (savedName) setName(savedName);
-        if (savedEmail) setEmail(savedEmail);
 
         const cartIds = location.state?.cartIds || [];
         const variantId = location.state?.variantId || null;
@@ -75,14 +71,23 @@ const Pay: React.FC = () => {
                             Authorization: `Bearer ${token}`,
                         },
                         params: variantId
-                            ? { variantId, quantity } // Gửi variantId và quantity nếu có
-                            : { cartIds }, // Nếu không có variantId, dùng cartIds
+                            ? { variantId, quantity }
+                            : { cartIds },
                     },
                 );
-                console.log(response);
 
                 if (response.data.status) {
-                    const { productpayment, totalAmount } = response.data.data;
+                    const { productpayment, totalAmount, user } =
+                        response.data.data;
+
+                    // Cập nhật thông tin người dùng từ API
+                    if (user) {
+                        setName(user.name || "");
+                        setEmail(user.email || "");
+                        setPhoneNumber(user.phone_number || "");
+                        setAddress(user.address || "");
+                    }
+
                     setPaymentProducts(productpayment);
                     setTotalAmount(totalAmount);
                 } else {
@@ -101,7 +106,7 @@ const Pay: React.FC = () => {
     const handlePaymentChange = (
         event: React.ChangeEvent<HTMLInputElement>,
     ) => {
-        setPaymentRole(Number(event.target.value)); // Cập nhật paymentRole khi người dùng chọn phương thức thanh toán
+        setPaymentRole(Number(event.target.value));
     };
 
     const handleOrder = async () => {
@@ -120,20 +125,16 @@ const Pay: React.FC = () => {
 
         const orderData = {
             cartIds: location.state?.cartIds || [],
-            variantId: location.state?.variantId || null, // Thêm variantId vào dữ liệu gửi đi
-            quantity: location.state?.quantity || null, // Thêm quantity vào dữ liệu gửi đi
+            variantId: location.state?.variantId || null,
+            quantity: location.state?.quantity || null,
             recipient_name: name,
             email: email,
-            phone_number: (
-                document.getElementById("phonenumber") as HTMLInputElement
-            )?.value,
-            recipient_address: (
-                document.getElementById("address") as HTMLInputElement
-            )?.value,
+            phone_number: phoneNumber,
+            recipient_address: address,
             note: (document.getElementById("note") as HTMLTextAreaElement)
                 ?.value,
             total_payment: totalAmount,
-            payment_role: paymentRole, // Sử dụng giá trị paymentRole đã chọn
+            payment_role: paymentRole,
         };
 
         try {
@@ -151,18 +152,15 @@ const Pay: React.FC = () => {
                 message.success("Đặt hàng thành công!");
 
                 if (paymentRole === 1) {
-                    // Thanh toán khi nhận hàng
-                    navigate("/success"); // Điều hướng đến trang thành công
+                    navigate("/success");
                 } else if (paymentRole === 2 && response.data.data) {
-                    // Thanh toán trực tuyến
-                    window.location.href = response.data.data; // Chuyển hướng đến URL thanh toán trực tuyến
+                    window.location.href = response.data.data;
                 }
             } else {
                 message.error(response.data.message);
             }
         } catch (error) {
             message.error("Đã xảy ra lỗi trong quá trình đặt hàng.");
-            console.error(error);
         }
     };
 
@@ -197,6 +195,7 @@ const Pay: React.FC = () => {
                                                 id="first-name"
                                                 placeholder="Nguyễn Văn A"
                                                 value={name}
+                                                readOnly
                                                 onChange={(e) =>
                                                     setName(e.target.value)
                                                 }
@@ -209,6 +208,7 @@ const Pay: React.FC = () => {
                                             type="email"
                                             id="email"
                                             value={email}
+                                            readOnly
                                             onChange={(e) =>
                                                 setEmail(e.target.value)
                                             }
@@ -218,11 +218,27 @@ const Pay: React.FC = () => {
                                         <label htmlFor="phonenumber">
                                             Số điện thoại
                                         </label>
-                                        <input type="number" id="phonenumber" />
+                                        <input
+                                            type="number"
+                                            id="phonenumber"
+                                            value={phoneNumber}
+                                            readOnly
+                                            onChange={(e) =>
+                                                setPhoneNumber(e.target.value)
+                                            }
+                                        />
                                     </fieldset>
                                     <fieldset className="box fieldset">
                                         <label htmlFor="address">Địa chỉ</label>
-                                        <input type="text" id="address" />
+                                        <input
+                                            type="text"
+                                            id="address"
+                                            value={address}
+                                            readOnly
+                                            onChange={(e) =>
+                                                setAddress(e.target.value)
+                                            }
+                                        />
                                     </fieldset>
                                     <fieldset className="box fieldset">
                                         <label htmlFor="note">
@@ -294,12 +310,9 @@ const Pay: React.FC = () => {
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {Array.isArray(
-                                                    paymentProducts,
-                                                ) &&
-                                                paymentProducts.length > 0 ? (
+                                                {paymentProducts.length > 0 ? (
                                                     paymentProducts.map(
-                                                        (item: CartItem) => (
+                                                        (item) => (
                                                             <tr key={item.id}>
                                                                 <td
                                                                     style={{
@@ -435,7 +448,7 @@ const Pay: React.FC = () => {
                                         </table>
                                         <br />
                                         <div className="d-flex justify-content-between line pb_20">
-                                            <h6 className="fw-5">Tổng tiền </h6>
+                                            <h6 className="fw-5">Tổng tiền</h6>
                                             <h6 className="total fw-5">
                                                 {totalAmount.toLocaleString(
                                                     "vi-VN",
@@ -443,18 +456,6 @@ const Pay: React.FC = () => {
                                                 VND
                                             </h6>
                                         </div>
-                                    </div>
-                                    <div className="d-flex justify-content-between line pb_20">
-                                        <h6 className="fw-5">Tổng cộng</h6>
-                                        <h6
-                                            className="total fw-5"
-                                            style={{ color: "red" }}
-                                        >
-                                            {totalAmount.toLocaleString(
-                                                "vi-VN",
-                                            )}{" "}
-                                            VND
-                                        </h6>
                                     </div>
 
                                     <div className="wd-check-payment">
@@ -464,7 +465,7 @@ const Pay: React.FC = () => {
                                                 name="payment"
                                                 id="bank"
                                                 className="tf-check"
-                                                value="2" // Thanh toán online
+                                                value="2"
                                                 onChange={handlePaymentChange}
                                             />
                                             <label htmlFor="bank">
@@ -485,6 +486,7 @@ const Pay: React.FC = () => {
                                             </label>
                                         </div>
                                     </div>
+
                                     <button
                                         className="tf-btn radius-3 btn-fill btn-icon animate-hover-btn justify-content-center"
                                         onClick={handleOrder}

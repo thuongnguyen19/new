@@ -1,55 +1,101 @@
-import React from 'react'
+import React from "react";
+import { Carousel } from "antd"; // Import Carousel từ Ant Design
 
 const Header2 = () => {
-  return (
-    <div>
-      <div className="tf-slideshow slider-effect-fade slider-skincare position-relative">
-            <div className="swiper tf-sw-slideshow" data-preview="1" data-tablet="1" data-mobile="1" data-centered="false" data-space="0" data-loop="true" data-auto-play="false" data-delay="2000" data-speed="1000">
-                <div className="swiper-wrapper">
-                    <div className="swiper-slide" >
-                        <div className="wrap-slider">
-                            <img className="lazyload" data-src="images/slider/skincare-slide1.jpg" src="images/slider/skincare-slide1.jpg" alt="skincare-slideshow-01" loading="lazy"/>
-                            <div className="box-content text-center">
-                                <div className="container">
-                                    <h1 className="fade-item fade-item-1 text-white heading">Skincare Reimagined.</h1>
-                                    <p className="fade-item fade-item-2 text-white">To deliver peak potency, minus the waste</p>
-                                    <a href="shop-collection-sub.html" className="fade-item fade-item-3 tf-btn btn-light-icon animate-hover-btn btn-xl radius-3"><span>Shop collection</span><i className="icon icon-arrow-right"></i></a> 
-                                </div>
-                            </div>
-                        </div>
+    return (
+        <div>
+            <style>
+                {`
+                    .carousel-container {
+                        position: relative;
+                        margin: 0; /* Loại bỏ khoảng cách */
+                        padding: 0;
+                        left: 50%;
+                        right: 50%;
+                        transform: translateX(-50%); /* Đảm bảo slider nằm chính giữa */
+                    }
+
+                    .carousel-image {
+                        width: 100%; /* Chiếm toàn bộ chiều rộng của khung chứa */
+                        height: 500px; /* Đặt chiều cao cố định cho tất cả ảnh */
+                        object-fit: cover; /* Cắt ảnh để giữ đúng tỉ lệ nhưng bao phủ toàn bộ khung */
+                    }
+
+                    .custom-dots {
+                        bottom: 20px; /* Tùy chỉnh vị trí của dấu chấm */
+                    }
+
+                    .wrap-slider {
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        overflow: hidden; /* Đảm bảo hình ảnh không vượt ra ngoài khung */
+                        width: 100%;
+                        height: 800px; /* Đảm bảo tất cả khung chứa ảnh có cùng chiều cao */
+                    }
+                `}
+            </style>
+
+            <div className="carousel-container">
+                <Carousel
+                    autoplay
+                    dots={{ className: "custom-dots" }}
+                    arrows={true} // Hiển thị nút để người dùng chuyển slide thủ công
+                    autoplaySpeed={3000} // Chuyển slide sau mỗi 3 giây
+                >
+                    {/* Slide 1 */}
+                    <div className="wrap-slider">
+                        <img
+                            src="https://theme.hstatic.net/200000061680/1000549213/14/ms_banner_img3.jpg?v=1348"
+                            alt="Slide 1"
+                            loading="lazy"
+                            className="carousel-image"
+                        />
                     </div>
-                    <div className="swiper-slide" >
-                        <div className="wrap-slider">
-                            <img className="lazyload" data-src="images/slider/skincare-slide2.jpg" src="images/slider/skincare-slide2.jpg" alt="skincare-slideshow-02" loading="lazy"/>
-                            <div className="box-content text-center">
-                                <div className="container">
-                                    <h1 className="fade-item fade-item-1 text-white heading">Beauty in Every Drop</h1>
-                                    <p className="fade-item fade-item-2 text-white">Indulge in the luxury of flawless skin</p>
-                                    <a href="shop-collection-sub.html" className="fade-item fade-item-3 tf-btn btn-light-icon animate-hover-btn btn-xl radius-3"><span>Shop collection</span><i className="icon icon-arrow-right"></i></a>
-                                </div>
-                            </div>
-                        </div>
+
+                    {/* Slide 2 */}
+                    <div className="wrap-slider">
+                        <img
+                            src="https://file.hstatic.net/1000381168/collection/1920x820px_0a49db5dd4d141b2847493aecbda1d78.jpg"
+                            alt="Slide 2"
+                            loading="lazy"
+                            className="carousel-image"
+                        />
                     </div>
-                    <div className="swiper-slide" >
-                        <div className="wrap-slider">
-                            <img className="lazyload" data-src="images/slider/skincare-slide3.jpg" src="images/slider/skincare-slide3.jpg" alt="fashion-slideshow-03" loading="lazy"/>
-                            <div className="box-content text-center">
-                                <div className="container">
-                                    <h1 className="fade-item fade-item-1 text-white">Skin Love, Unleashed</h1>
-                                    <p className="fade-item fade-item-2 text-white">Experience the magic of self-care with our premium skincare</p>
-                                    <a href="shop-collection-sub.html" className="fade-item fade-item-3 tf-btn btn-light-icon animate-hover-btn btn-xl radius-3"><span>Shop collection</span><i className="icon icon-arrow-right"></i></a>
-                                </div>
-                            </div>
-                        </div>
+
+                    {/* Slide 3 */}
+                    <div className="wrap-slider">
+                        <img
+                            src="https://i.pinimg.com/564x/ea/d0/9a/ead09abee4a914c5e1536f6c60f75604.jpg"
+                            alt="Slide 3"
+                            loading="lazy"
+                            className="carousel-image"
+                        />
                     </div>
-                </div>
-            </div>
-            <div className="wrap-pagination sw-absolute-3">
-                <div className="sw-dots style-2 dots-white sw-pagination-slider justify-content-center"></div>
+
+                    {/* Slide 4 */}
+                    <div className="wrap-slider">
+                        <img
+                            src="https://huythanhjewelry.vn/storage/photos/uploads/banner-cnc-03_1726623182.jpg"
+                            alt="Slide 4"
+                            loading="lazy"
+                            className="carousel-image"
+                        />
+                    </div>
+
+                    {/* Slide 5 */}
+                    <div className="wrap-slider">
+                        <img
+                            src="https://glosbejewelry.net/upload/image/banner-web-chao-he-glosbe.jpg"
+                            alt="Slide 5"
+                            loading="lazy"
+                            className="carousel-image"
+                        />
+                    </div>
+                </Carousel>
             </div>
         </div>
-    </div>
-  )
-}
+    );
+};
 
-export default Header2
+export default Header2;

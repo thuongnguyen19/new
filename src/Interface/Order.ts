@@ -9,6 +9,8 @@ export interface Order {
     created_at: string;
     status: string;
     updated_at: string;
+    payment_role: number;
+    status_payment: number;
     total_payment: number;
     order_detail: Array<{
         id: number;

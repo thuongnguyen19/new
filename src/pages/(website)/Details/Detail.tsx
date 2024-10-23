@@ -40,6 +40,16 @@ interface RelatedProduct {
     variant: Variant[];
 }
 
+interface Material {
+    id: number;
+    name: string;
+}
+
+interface Stone {
+    id: number;
+    name: string;
+}
+
 interface Product {
     slideImages: any;
     id: number;
@@ -48,6 +58,8 @@ interface Product {
     variant: Variant[];
     description: string;
     images: Image[];
+    material: Material; // Thông tin về chất liệu
+    stone: Stone; // Thông tin về loại đá
 }
 
 // Hàm để thêm URL đầy đủ cho đường dẫn ảnh
@@ -857,8 +869,34 @@ const Detail: React.FC = () => {
                             >
                                 Mô tả sản phẩm
                             </h5>
-                            <p style={{ fontSize: "18px" }}>
+                            <hr />
+                            <p
+                                style={{
+                                    fontSize: "18px",
+                                    marginBottom: "20px",
+                                }}
+                            >
                                 {product?.description}
+                            </p>
+
+                            <p
+                                style={{
+                                    fontSize: "18px",
+                                    fontWeight: "bold",
+                                    marginBottom: "20px",
+                                }}
+                            >
+                                Chất liệu: {product?.material.name}
+                            </p>
+
+                            <p
+                                style={{
+                                    fontSize: "18px",
+                                    fontWeight: "bold",
+                                    marginBottom: "20px",
+                                }}
+                            >
+                                Loại đá: {product?.stone.name}
                             </p>
                         </div>
 

@@ -22,6 +22,17 @@ const Od_Detail = () => {
         7: "Đã hủy",
     };
 
+    const paymentRoleMap: { [key: number]: string } = {
+        1: "COD",
+        2: "VNPay",
+        3: "MoMo",
+    };
+
+    const statusPaymentMap: { [key: number]: string } = {
+        1: "Chưa thanh toán",
+        2: "Đã thanh toán",
+    };
+
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState<number>(1);
@@ -62,6 +73,7 @@ const Od_Detail = () => {
                 setLoading(false);
             }
         };
+        
 
         loadOrderDetails();
     }, [navigate, id, page, perPage]);
@@ -70,6 +82,7 @@ const Od_Detail = () => {
         setCancelOrderId(orderId);
         setIsModalVisible(true);
     };
+    
 
     const handleCancelOrder = async () => {
         if (!cancelOrderId) {
@@ -88,6 +101,7 @@ const Od_Detail = () => {
                 message.error("Bạn chưa đăng nhập.");
                 return;
             }
+            
             const response = await axiosInstance.get(`/purchasedOrders`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -104,7 +118,7 @@ const Od_Detail = () => {
             setIsModalVisible(false);
             setCancelReason("");
         } catch (error) {
-            message.error("Không thể hủy đơn hàng.");
+            message.error("Đơn hàng đã xác nhận. Bạn không thể hủy đơn.");
         }
     };
 
@@ -181,6 +195,61 @@ const Od_Detail = () => {
                                     <h6 className="mt-2 fw-5">
                                         Đơn hàng #{order.id}
                                     </h6>
+                                    {Number(order.status) === 1 && (
+                                        <div
+                                            style={{
+                                                textAlign: "right",
+                                                marginTop: "10px",
+                                            }}
+                                        >
+                                            <a
+                                                className="view-btn"
+                                                style={{
+                                                    backgroundColor: "black",
+                                                    color: "white",
+                                                    padding: "10px",
+                                                    cursor: "pointer",
+                                                    width: "120px",
+                                                    display: "inline-block",
+                                                    textAlign: "center",
+                                                }}
+                                                onClick={() =>
+                                                    showCancelModal(order.id)
+                                                }
+                                            >
+                                                Hủy đơn hàng
+                                            </a>
+                                        </div>
+                                    )}
+
+                                    {Number(order.status) === 4 && (
+                                        <div
+                                            style={{
+                                                textAlign: "right",
+                                                marginTop: "10px",
+                                            }}
+                                        >
+                                            <a
+                                                className="view-btn"
+                                                style={{
+                                                    backgroundColor: "black",
+                                                    color: "white",
+                                                    padding: "10px",
+                                                    cursor: "pointer",
+                                                    width: "120px",
+                                                    display: "inline-block",
+                                                    textAlign: "center",
+                                                }}
+                                                onClick={() =>
+                                                    handleConfirmReceived(
+                                                        order.id,
+                                                    )
+                                                }
+                                            >
+                                                Đã nhận được hàng
+                                            </a>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                             <div className="tf-grid-layout md-col-2 gap-15">
@@ -194,7 +263,7 @@ const Od_Detail = () => {
                                 </div>
                                 <div className="item">
                                     <div className="text-2 text_black-2">
-                                        Họ và tên khách hàng
+                                        Họ và tên
                                     </div>
                                     <div className="text-2 mt_4 fw-6">
                                         {order.recipient_name}
@@ -216,7 +285,32 @@ const Od_Detail = () => {
                                         {order.phone_number}
                                     </div>
                                 </div>
+                                <div className="item">
+                                    <div className="text-2 text_black-2">
+                                        Phương thức thanh toán
+                                    </div>
+                                    <div className="text-2 mt_4 fw-6">
+                                        {
+                                            paymentRoleMap[
+                                                Number(order.payment_role)
+                                            ]
+                                        }
+                                    </div>
+                                </div>
+                                <div className="item">
+                                    <div className="text-2 text_black-2">
+                                        Trạng thái thanh toán
+                                    </div>
+                                    <div className="text-2 mt_4 fw-6">
+                                        {
+                                            statusPaymentMap[
+                                                Number(order.status_payment)
+                                            ]
+                                        }
+                                    </div>
+                                </div>
                             </div>
+
                             <div className="widget-tabs style-has-border widget-order-tab">
                                 <ul className="widget-menu-tab">
                                     <li
@@ -342,7 +436,7 @@ const Od_Detail = () => {
                                                                 style={{
                                                                     textAlign:
                                                                         "right",
-                                                                    width: "600px",
+                                                                    width: "800px",
                                                                 }}
                                                             >
                                                                 <span
@@ -352,6 +446,7 @@ const Od_Detail = () => {
                                                                             "15px",
                                                                         fontWeight:
                                                                             "bold",
+                                                                        
                                                                     }}
                                                                 >
                                                                     {new Intl.NumberFormat(
@@ -508,81 +603,6 @@ const Od_Detail = () => {
                                                                     </li>
                                                                 );
                                                             })
-                                                        )}
-
-                                                        {Number(
-                                                            order.status,
-                                                        ) === 1 && (
-                                                            <div
-                                                                style={{
-                                                                    textAlign:
-                                                                        "right",
-                                                                    marginTop:
-                                                                        "10px",
-                                                                }}
-                                                            >
-                                                                <a
-                                                                    className="view-btn"
-                                                                    style={{
-                                                                        backgroundColor:
-                                                                            "black",
-                                                                        color: "white",
-                                                                        padding:
-                                                                            "10px",
-                                                                        cursor: "pointer",
-                                                                        width: "120px",
-                                                                        display:
-                                                                            "inline-block",
-                                                                        textAlign:
-                                                                            "center",
-                                                                    }}
-                                                                    onClick={() =>
-                                                                        showCancelModal(
-                                                                            order.id,
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    Hủy đơn hàng
-                                                                </a>
-                                                            </div>
-                                                        )}
-
-                                                        {Number(
-                                                            order.status,
-                                                        ) === 4 && (
-                                                            <div
-                                                                style={{
-                                                                    textAlign:
-                                                                        "right",
-                                                                    marginTop:
-                                                                        "10px",
-                                                                }}
-                                                            >
-                                                                <a
-                                                                    className="view-btn"
-                                                                    style={{
-                                                                        backgroundColor:
-                                                                            "black",
-                                                                        color: "white",
-                                                                        padding:
-                                                                            "10px",
-                                                                        cursor: "pointer",
-                                                                        width: "120px",
-                                                                        display:
-                                                                            "inline-block",
-                                                                        textAlign:
-                                                                            "center",
-                                                                    }}
-                                                                    onClick={() =>
-                                                                        handleConfirmReceived(
-                                                                            order.id,
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    Đã nhận được
-                                                                    hàng
-                                                                </a>
-                                                            </div>
                                                         )}
                                                     </ul>
 
