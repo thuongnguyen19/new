@@ -722,6 +722,107 @@ img {
     border: 1px solid #ddd;
     background-color: #f9f9f9;
   }
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 0;
+    }
   
+    .coupons-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      padding: 20px;
+    }
+  
+    .coupon-card {
+      background-color: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 10px;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s;
+    }
+  
+    .coupon-card:hover {
+      transform: translateY(-5px);
+    }
+  
+    .coupon-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+  
+    .label {
+      background-color: #ff5722;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+  
+    .coupon-logo {
+      width: 40px;
+      height: auto;
+    }
+  
+    .coupon-body {
+      flex-grow: 1;
+    }
+  
+    .coupon-title {
+      font-size: 16px;
+      font-weight: bold;
+      margin: 10px 0;
+      color: #333;
+    }
+  
+    .coupon-date {
+      color: #757575;
+      font-size: 12px;
+    }
+  
+    .coupon-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+    }
+  
+    .expiration {
+      color: red;
+      font-size: 14px;
+      font-weight: bold;
+    }
+  
+    .conditions {
+      color: #1976d2;
+      text-decoration: none;
+      font-size: 12px;
+    }
+  
+    .conditions:hover {
+      text-decoration: underline;
+    }
+.hoverButton {
+    background-color: #800080; /* Màu tím mặc định */
+    color: white;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease; /* Thêm hiệu ứng chuyển đổi */
+}
+
+.hoverButton:hover {
+    background-color: #FFA500; /* Màu cam khi hover */
+}
+
 
 }

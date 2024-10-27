@@ -16,6 +16,7 @@ export interface Order {
         id: number;
         id_oder: number;
         id_product: number;
+        id_variant: number;
         selling_price: number;
         list_price: number;
         product_name: string;
@@ -34,6 +35,13 @@ export interface Variant {
         id: number;
         name: string;
     };
+}
+
+export interface Review {
+    id_product: number;
+    id_variant: number;
+    content: string;
+    rating: number;
 }
 
 export const fetchOrders = async (
@@ -61,19 +69,34 @@ export const fetchOrders = async (
     return response.data;
 };
 
-// export const cancelOrder = async (): Promise<void> => {
-//     const token = localStorage.getItem("authToken");
-//     if (!token) {
-//         throw new Error("No token found");
-//     }
+// Hàm gọi API để lấy danh sách đánh giá (reviews)
+export const submitReview = async (
+    id_order: number,
+    id_variant: number,
+    id_product: number,
+    content: string,
+    rating: number,
+): Promise<{ data: Review }> => {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+        throw new Error("No token found");
+    }
 
-//     await axiosInstance.get(`/purchasedOrders`, {
-//                 params: {
-//                     cancel_id: cancelOrderId, // Truyền cancel_id lên API
-//                     note: cancelReason, // Không bắt buộc gửi note, chỉ kiểm tra
-//                 },
-//         headers: {
-//             Authorization: `Bearer ${token}`,
-//         },
-//     });
-// };
+    const response = await axiosInstance.post<{ data: Review }>(
+        "/addCommentProduct",
+        {
+            id_order: id_order,
+            id_product: id_product,
+            id_variant: id_variant,
+            content: content,
+            rating: rating,
+        },
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        },
+    );
+
+    return response.data;
+};

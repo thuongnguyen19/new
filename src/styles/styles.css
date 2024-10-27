@@ -18342,6 +18342,51 @@ blockquote .text {
   .banner-countdown-v2 .tf-countdown .countdown__timer {
     justify-content: start;
   }
+    .comment-list {
+      margin-top: 20px;
+    }
+  
+    .comment-item {
+      border-bottom: 1px solid #ddd;
+      padding: 10px 0;
+    }
+  
+    .comment-header {
+      align-items: center;
+      justify-content: space-between;
+    }
+  
+    .comment-header strong {
+      font-size: 1.1em;
+      color: #333;
+    }
+  
+    .stars {
+      display: flex;
+      align-items: center;
+    }
+  
+    .star {
+      font-size: 1.2em;
+      color: #ccc;
+      margin-right: 3px;
+    }
+  
+    .star.filled {
+      color: #fbc02d;
+      /* Màu vàng cho sao */
+    }
+  
+    .comment-content {
+      color: #555;
+      font-size: 0.95em;
+      margin: 5px 0;
+    }
+  
+    .comment-date {
+      font-size: 0.85em;
+      color: #999;
+    }
 }
 
 /*# sourceMappingURL=styles.css.map */

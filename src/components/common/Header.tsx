@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
     SearchOutlined,
     UserOutlined,
@@ -11,14 +11,15 @@ import { Category, fetchCategorys } from "../../Interface/Category";
 
 const Header: React.FC = () => {
     const [categories, setCategories] = useState<Category[]>([]);
-    const [loading, setLoading] = useState<boolean>(true); 
-    const [cartCount, setCartCount] = useState<number>(0); 
-    const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false); 
+    const [loading, setLoading] = useState<boolean>(true);
+    const [cartCount, setCartCount] = useState<number>(0);
+    const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
 
     useEffect(() => {
+        // Hàm tải danh mục sản phẩm
         const loadCategories = async () => {
             try {
-                const data = await fetchCategorys(); 
+                const data = await fetchCategorys(); // Gọi API để tải danh mục
                 setCategories(data);
             } catch (error) {
                 console.error("Lỗi khi tải danh mục sản phẩm:", error);
@@ -26,10 +27,20 @@ const Header: React.FC = () => {
             setLoading(false);
         };
 
+        // Hàm tính tổng số lượng sản phẩm trong giỏ hàng
         const fetchCartCount = () => {
             const cartData = localStorage.getItem("cartItems");
             if (cartData) {
-                setCartCount(JSON.parse(cartData).length); 
+                const cartItems = JSON.parse(cartData);
+
+              
+                const totalQuantity = cartItems.reduce(
+                    (total: number, item: { quantity: number }) =>
+                        total + item.quantity,
+                    0,
+                );
+
+                setCartCount(totalQuantity); 
             }
         };
 
@@ -38,8 +49,9 @@ const Header: React.FC = () => {
             setIsLoggedIn(true);
         }
 
-        loadCategories(); 
-        fetchCartCount(); 
+      
+        loadCategories();
+        fetchCartCount();
 
         window.addEventListener("storage", fetchCartCount);
 
@@ -47,8 +59,6 @@ const Header: React.FC = () => {
             window.removeEventListener("storage", fetchCartCount);
         };
     }, []);
-
-   
 
     return (
         <header id="header" className="header-default">
@@ -155,8 +165,6 @@ const Header: React.FC = () => {
                                     </span>
                                 </Link>
                             </li>
-
-                          
                         </ul>
                     </div>
                 </div>

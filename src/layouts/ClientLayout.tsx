@@ -1,9 +1,9 @@
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Header from "../components/common/Header";
 import Header2 from "../components/common/Header2";
 import Footer from "../components/common/Footer";
 import { message } from "antd";
-import { useEffect, useState } from "react";
 import {
     CaretDownOutlined,
     SearchOutlined,
@@ -17,21 +17,23 @@ import { Category, fetchCategorys } from "../Interface/Category";
 const Layoutweb: React.FC = () => {
     const navigate = useNavigate();
     const [messageAPI, contextHolder] = message.useMessage();
-    const [user, setUser] = useState<{ name: string } | null>(null); // Storing user information
-    const [isAuthenticated, setIsAuthenticated] = useState(false); // Check if user is logged in
+    const [user, setUser] = useState<{ name: string } | null>(null); // Lưu thông tin người dùng
+    const [isAuthenticated, setIsAuthenticated] = useState(false); // Kiểm tra người dùng đăng nhập
 
     const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
 
+    // Thêm biến trạng thái để lưu số lượng sản phẩm trong giỏ hàng
+    const [cartCount, setCartCount] = useState<number>(0);
 
-    // Check if the user is authenticated
+    // Kiểm tra xem người dùng đã đăng nhập hay chưa
     useEffect(() => {
         const token = localStorage.getItem("authToken");
 
         if (token) {
             setIsAuthenticated(true);
 
-            // Call API to get user info based on token
+            // Gọi API lấy thông tin người dùng dựa trên token
             axios
                 .get("http://localhost:8000/api/user", {
                     headers: {
@@ -39,36 +41,60 @@ const Layoutweb: React.FC = () => {
                     },
                 })
                 .then((response) => {
-                    setUser(response.data.user); // Set user info
+                    setUser(response.data.user); // Đặt thông tin người dùng
                 })
                 .catch((error) => {
-                    console.error("Failed to fetch user data:", error);
+                    console.error("Không thể lấy dữ liệu người dùng:", error);
                 });
         }
     }, []);
 
-    //API Danh muc
+    // API Danh mục và giỏ hàng
     useEffect(() => {
         const loadCategorys = async () => {
             try {
                 const data = await fetchCategorys();
                 setCategories(data);
             } catch (error) {
+                console.error("Lỗi khi tải danh mục:", error);
             }
             setLoading(false);
         };
 
-        loadCategorys();
-    }, []);
+        // Tính tổng số lượng sản phẩm trong giỏ hàng từ localStorage
+        const fetchCartCount = () => {
+            const cartData = localStorage.getItem("cartItems");
+            if (cartData) {
+                const cartItems = JSON.parse(cartData);
 
+                const totalQuantity = cartItems.reduce(
+                    (total: number, item: { quantity: number }) =>
+                        total + item.quantity,
+                    0,
+                );
+
+                setCartCount(totalQuantity);
+            }
+        };
+
+        loadCategorys();
+        fetchCartCount();
+
+        // Lắng nghe sự thay đổi của localStorage
+        window.addEventListener("storage", fetchCartCount);
+
+        return () => {
+            window.removeEventListener("storage", fetchCartCount);
+        };
+    }, []);
 
     if (loading) {
         return <p>Đang tải...</p>;
     }
 
-    // Navigate to the profile page
+    // Điều hướng đến trang cá nhân
     const goToProfile = () => {
-        navigate("/profile");   
+        navigate("/profile");
     };
 
     return (
@@ -134,22 +160,32 @@ const Layoutweb: React.FC = () => {
                                                 </Link>
                                             </li>
                                             <li className="menu-item">
-                                                <a href="#" className="item-link">Danh mục<CaretDownOutlined /></a>
-                                                <div className="sub-menu submenu-default" >
+                                                <a
+                                                    href="#"
+                                                    className="item-link"
+                                                >
+                                                    Danh mục
+                                                    <CaretDownOutlined />
+                                                </a>
+                                                <div className="sub-menu submenu-default">
                                                     <ul className="menu-list">
-                                                        <li>
-                                                            <Link to="/detail" className="item-link">
-                                                                Trang chủ
-                                                            </Link>
-                                                            {categories.map((category) => (
-                                                                <li key={category.id}>
-                                                                    <Link to={category.name}>{category.name}</Link>
+                                                        {categories.map(
+                                                            (category) => (
+                                                                <li
+                                                                    key={
+                                                                        category.id
+                                                                    }
+                                                                >
+                                                                    <Link
+                                                                        to={`/category/${category.id}`}
+                                                                    >
+                                                                        {
+                                                                            category.name
+                                                                        }
+                                                                    </Link>
                                                                 </li>
-                                                            ))}
-                                                        </li>
-                                                        <li>
-                                                        </li>
-
+                                                            ),
+                                                        )}
                                                     </ul>
                                                 </div>
                                             </li>
@@ -189,16 +225,12 @@ const Layoutweb: React.FC = () => {
                                                     >
                                                         Xin chào, {user?.name}
                                                     </span>
-
-
                                                 </div>
                                             ) : (
                                                 <Link
                                                     to="/login"
                                                     className="nav-icon-item"
                                                 >
-                                                    {" "}
-                                                    {/* Direct to login page if not authenticated */}
                                                     <UserOutlined
                                                         style={{
                                                             fontSize: "24px",
@@ -210,14 +242,13 @@ const Layoutweb: React.FC = () => {
                                         <li className="nav-cart">
                                             <Link
                                                 to="/cart"
-                                                data-bs-toggle="modal"
                                                 className="nav-icon-item"
                                             >
                                                 <ShoppingCartOutlined
                                                     style={{ fontSize: "24px" }}
                                                 />
                                                 <span className="count-box">
-                                                    0
+                                                    {cartCount}
                                                 </span>
                                             </Link>
                                         </li>

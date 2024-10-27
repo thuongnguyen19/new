@@ -22,6 +22,7 @@ interface CartItem {
             name: string;
         };
         selling_price: string;
+        quantity: number; // Số lượng trong kho
         image_color: string;
     } | null;
 }
@@ -167,8 +168,15 @@ const ListCart: React.FC = () => {
     const handleIncreaseQuantity = (itemId: number) => {
         const updatedCartItems = cartItems.map((item) => {
             if (item.id === itemId) {
-                const updatedQuantity = item.quantity + 1;
-                item.quantity = updatedQuantity;
+                // Kiểm tra xem số lượng hiện tại có nhỏ hơn số lượng tồn kho không
+                if (item.quantity < (item.variant?.quantity || 0)) {
+                    const updatedQuantity = item.quantity + 1;
+                    item.quantity = updatedQuantity;
+                } else {
+                    message.warning(
+                        `Sản phẩm "${item.variant?.product.name}" chỉ còn ${item.variant?.quantity} trong kho.`,
+                    );
+                }
                 return item;
             }
             return item;

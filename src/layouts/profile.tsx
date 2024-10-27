@@ -78,9 +78,12 @@ const Profile = () => {
         });
     };
 
+    // Set the page title based on current location
     const pageTitle = location.pathname.includes("od_histori")
         ? "Lịch sử đơn hàng của bạn"
-        : `Bảng điều khiển của ${user?.name || "người dùng"}`;
+        : location.pathname.includes("coupons") // Check if the path is for coupons
+          ? "Tất cả mã giảm giá"
+          : `Bảng điều khiển của ${user?.name || "người dùng"}`;
 
     return (
         <div>
@@ -137,6 +140,15 @@ const Profile = () => {
                                         style={{ cursor: "pointer" }}
                                     >
                                         Đơn hàng
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link
+                                        to="coupons" // Add link to coupons page
+                                        className={`my-account-nav-item ${location.pathname.includes("coupons") ? "active" : ""}`}
+                                        style={{ cursor: "pointer" }}
+                                    >
+                                        Mã giảm giá của tôi
                                     </Link>
                                 </li>
                                 <li>

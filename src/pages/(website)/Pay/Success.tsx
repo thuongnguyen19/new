@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { message } from "antd";
+import { message, Spin } from "antd";
 import { useLocation } from "react-router-dom";
 import Header from "../../../components/common/Header";
 import Footer from "../../../components/common/Footer";
@@ -12,53 +12,40 @@ const Success: React.FC = () => {
     const location = useLocation();
 
     useEffect(() => {
-        // Lấy token từ localStorage
         const token = localStorage.getItem("authToken");
         if (!token) {
             message.error("Bạn chưa đăng nhập.");
+            setLoading(false);
             return;
         }
 
-        // Lấy các tham số từ URL
         const params = new URLSearchParams(window.location.search);
-        const vnp_TxnRef = params.get("vnp_TxnRef"); // Mã giao dịch
-        const vnp_ResponseCode = params.get("vnp_ResponseCode"); // Mã phản hồi thanh toán
+        const vnp_TxnRef = params.get("vnp_TxnRef");
+        const vnp_ResponseCode = params.get("vnp_ResponseCode");
+        const vnp_OrderInfo = params.get("vnp_OrderInfo");
 
-        // Hàm cập nhật trạng thái thanh toán
-        const updatePaymentStatus = async (txnRef: string) => {
-            try {
-                const response = await axios.put(
-                    "http://localhost:8000/api/updatePaymentStatus",
-                    {
-                        vnp_TxnRef: txnRef,
-                        status_payment: 2, // Đặt trạng thái thanh toán thành 2
-                    },
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`, // Thêm token vào header
-                        },
-                    },
-                );
-                console.log("Cập nhật trạng thái thanh toán:", response.data);
-            } catch (error) {
-                console.error("Cập nhật trạng thái thất bại:", error);
-            }
-        };
-
-        // Hàm xử lý kết quả thanh toán từ VNPay
         const fetchPaymentResult = async () => {
-            if (vnp_TxnRef && vnp_ResponseCode === "00") {
-                // Kiểm tra mã giao dịch và mã phản hồi
+            if (vnp_TxnRef && vnp_ResponseCode) {
                 try {
+                    if (vnp_ResponseCode === "24") {
+                        setStatus(false);
+                        setMessageText(
+                            "Đặt hàng thất bại do bạn chưa hoàn tất thanh toán.",
+                        );
+                        setLoading(false);
+                        return;
+                    }
+
                     const response = await axios.get(
                         "http://localhost:8000/api/paymentResult",
                         {
                             params: {
-                                vnp_TxnRef, // Mã giao dịch
-                                vnp_ResponseCode, // Mã phản hồi thanh toán
+                                vnp_TxnRef,
+                                vnp_ResponseCode,
+                                vnp_OrderInfo,
                             },
                             headers: {
-                                Authorization: `Bearer ${token}`, // Thêm token vào header
+                                Authorization: `Bearer ${token}`,
                             },
                         },
                     );
@@ -68,7 +55,9 @@ const Success: React.FC = () => {
                         setMessageText(
                             response.data.message || "Đặt hàng thành công!",
                         );
-                        await updatePaymentStatus(vnp_TxnRef); // Cập nhật trạng thái thanh toán
+
+                    
+                      
                     } else {
                         setStatus(false);
                         setMessageText(
@@ -94,7 +83,11 @@ const Success: React.FC = () => {
     }, [location]);
 
     if (loading) {
-        return <div>Loading...</div>;
+        return (
+            <div className="loading-container">
+                <Spin tip="Đang xử lý thanh toán..." />
+            </div>
+        );
     }
 
     return (
@@ -118,7 +111,7 @@ const Success: React.FC = () => {
                                             src={
                                                 status
                                                     ? "https://imgur.com/ZKPE11b.jpg"
-                                                    : "https://imgur.com/failed.jpg"
+                                                    : "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Red_x.svg/1024px-Red_x.svg.png"
                                             }
                                             alt="Trạng thái thanh toán"
                                             width={60}
