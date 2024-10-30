@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Card, Row, Col, Button, Badge, message } from "antd";
+import { Card, Row, Col, Button, Badge, message, Tooltip } from "antd";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { CopyOutlined } from "@ant-design/icons";
 
 interface Voucher {
     code: string;
@@ -16,7 +17,7 @@ const Coupons = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        // Gọi API để lấy danh sách voucher
+        // Fetch vouchers list from API
         const fetchVouchers = async () => {
             try {
                 const response = await axios.get(
@@ -40,10 +41,16 @@ const Coupons = () => {
         fetchVouchers();
     }, []);
 
-    // Hàm xử lý khi nhấn "Dùng ngay"
+    // Handle "Use Now" button click
     const handleUseNow = () => {
         message.info("Chọn mặt hàng để thanh toán");
-        navigate("/cart"); // Điều hướng đến trang giỏ hàng
+        navigate("/cart"); // Navigate to cart page
+    };
+
+    // Handle copying voucher code to clipboard
+    const handleCopyCode = (code: string) => {
+        navigator.clipboard.writeText(code);
+        message.success("Đã sao chép mã giảm giá!");
     };
 
     return (
@@ -53,10 +60,36 @@ const Coupons = () => {
                     <Col xs={24} sm={12} md={8} key={voucher.code}>
                         <Card
                             title={
-                                <Badge.Ribbon
-                                    text="Số lượng có hạn"
-                                    color="red"
-                                />
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        justifyContent: "space-between",
+                                        alignItems: "center",
+                                    }}
+                                >
+                                    <Badge.Ribbon
+                                        text="Số lượng có hạn"
+                                        color="red"
+                                    />
+                                    <Tooltip title="Sao chép mã">
+                                        <span
+                                            style={{
+                                                cursor: "pointer",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                color: "blue",
+                                            }}
+                                            onClick={() =>
+                                                handleCopyCode(voucher.code)
+                                            }
+                                        >
+                                            {voucher.code}{" "}
+                                            <CopyOutlined
+                                                style={{ marginLeft: 5 }}
+                                            />
+                                        </span>
+                                    </Tooltip>
+                                </div>
                             }
                             bordered={false}
                             style={{ borderRadius: "10px", overflow: "hidden" }}
@@ -88,7 +121,7 @@ const Coupons = () => {
                                 >
                                     Dùng ngay
                                 </span>
-                                </div>
+                            </div>
                         </Card>
                     </Col>
                 ))}

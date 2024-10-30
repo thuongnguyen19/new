@@ -74,6 +74,7 @@ const ListCart: React.FC = () => {
 
     const updateLocalStorageCart = (cartItems: CartItem[]) => {
         localStorage.setItem("cartItems", JSON.stringify(cartItems));
+           window.dispatchEvent(new Event("storage"));
     };
 
     // Merge duplicate cart items
