@@ -55,9 +55,11 @@ const Pay: React.FC = () => {
     const [paymentProducts, setPaymentProducts] = useState<CartItem[]>([]);
     const [totalAmount, setTotalAmount] = useState<number>(0);
     const [originalTotalAmount, setOriginalTotalAmount] = useState<number>(0);
+    // const [finalAmount, setFinalAmount] = useState<number>(0);
     const [loading, setLoading] = useState<boolean>(true);
     const [isOrderLoading, setIsOrderLoading] = useState<boolean>(false);
     const [name, setName] = useState<string>("");
+    const [ Point, setPoint] = useState<string>("");
     const [email, setEmail] = useState<string>("");
     const [phoneNumber, setPhoneNumber] = useState<string>("");
     const [address, setAddress] = useState<string>("");
@@ -67,6 +69,7 @@ const Pay: React.FC = () => {
     const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
     const [discount, setDiscount] = useState<number>(0);
     const [isDiscountApplied, setIsDiscountApplied] = useState<boolean>(false);
+    const [isPoint, setIsPoint] = useState<boolean>(false);
     const [pointsToUse, setPointsToUse] = useState<number>(0);
     const [discountLoading, setDiscountLoading] = useState<boolean>(false);
     const [availableVouchers, setAvailableVouchers] = useState<Voucher[]>([]);
@@ -117,6 +120,7 @@ const Pay: React.FC = () => {
                         setEmail(user.email || "");
                         setPhoneNumber(user.phone_number || "");
                         setAddress(user.address || "");
+                        setPoint(user.accum_point || "");
                     }
 
                     setPaymentProducts(productpayment);
@@ -191,31 +195,21 @@ const Pay: React.FC = () => {
         return true;
     };
 
-
-
-
-
-    
-
     // Xóa các phần liên quan đến mã giảm giá và chỉ giữ lại logic áp dụng điểm
     const handlePointsApply = () => {
         const pointsDiscount = pointsToUse * 1000; // Quy đổi điểm thành VND
-        const discountedTotal = originalTotalAmount - pointsDiscount;
+
+        const discountedTotal = originalTotalAmount - discount - pointsDiscount;
 
         if (discountedTotal >= 0) {
             setTotalAmount(discountedTotal); // Cập nhật tổng số tiền sau khi áp dụng điểm tích lũy
+            setIsPoint(true);
+            setPointsToUse(pointsToUse);
             message.success("Điểm tích lũy đã được áp dụng.");
         } else {
             message.error("Số điểm nhập vượt quá số tiền cần thanh toán.");
         }
     };
-
-
-
-
-
-
-
 
     const handleDiscountCodeChange = (
         e: React.ChangeEvent<HTMLInputElement>,
@@ -262,8 +256,8 @@ const Pay: React.FC = () => {
             const response = await axios.post(
                 "http://localhost:8000/api/vouchers/apply",
                 {
-                    voucher_code: discountCode,
-                    order_amount: originalTotalAmount - pointsToUse * 1000,
+                    voucher_code: code,
+                    order_amount: originalTotalAmount,
                     user_id: userId,
                 },
                 {
@@ -280,7 +274,7 @@ const Pay: React.FC = () => {
                 setDiscount(discount);
                 setTotalAmount(final_amount - pointsToUse * 1000);
                 setIsDiscountApplied(true);
-                   setDiscountCode(code); 
+                setDiscountCode(code);
                 message.success("Mã giảm giá đã được áp dụng thành công.");
             } else {
                 setDiscountError("Mã không tồn tại hoặc không đủ điều kiện.");
@@ -362,19 +356,23 @@ const Pay: React.FC = () => {
     };
 
     const selectCoupon = (voucherCode: string) => {
-        const selectedVoucher = availableVouchers.find(
-            (v) => v.code === voucherCode,
-        );
-        if (selectedVoucher) {
-            setDiscountCode(selectedVoucher.code); // Cập nhật discountCode
+        // const selectedVoucher = availableVouchers.find(
+        //     (v) => v.code === voucherCode,
+        // );
+        // if (selectedVoucher) {
+            setDiscountCode(voucherCode); // Cập nhật discountCode
             setVoucherId(voucherId); // Cập nhật voucherId
             applyDiscount(voucherCode);
             setDiscountError(""); // Xóa lỗi khi người dùng chọn voucher
             const discountedTotal = originalTotalAmount - pointsToUse * 1000;
             setTotalAmount(discountedTotal);
             setIsModalVisible(false); // Đóng modal sau khi chọn voucher
-        }
+        // }
     };
+
+  if (loading) {
+      return <div>Loading...</div>;
+  }
 
     return (
         <>
@@ -732,18 +730,19 @@ const Pay: React.FC = () => {
                                         <div style={{ marginTop: "20px" }}>
                                             <input
                                                 type="number"
-                                                placeholder="Nhập điểm tích lũy"
+                                                placeholder="Nhập điểm tích lũy 1 điểm = 1000 VNĐ"
                                                 style={{
                                                     marginRight: "10px",
                                                     padding: "8px",
                                                 }}
-                                                value={pointsToUse}
+                                                value={ pointsToUse == 0 ? null : pointsToUse} 
                                                 onChange={(e) =>
                                                     setPointsToUse(
                                                         Number(e.target.value),
                                                     )
                                                 }
                                             />
+                                            <p>điểm tiêu dùng : {Point}</p>
                                             <Button
                                                 onClick={handlePointsApply}
                                                 style={{
@@ -772,26 +771,51 @@ const Pay: React.FC = () => {
                                             </h6>
                                         </div>
 
-                                        {isDiscountApplied && (
+                                        {(isDiscountApplied || isPoint) && (
                                             <>
-                                                <div className="d-flex justify-content-between line pb_20">
-                                                    <h6
-                                                        className="fw-5"
-                                                        style={{
-                                                            marginBottom:
-                                                                "20px",
-                                                        }}
-                                                    >
-                                                        Giảm giá:
-                                                    </h6>
-                                                    <h6 className="fw-5">
-                                                        -{" "}
-                                                        {discount.toLocaleString(
-                                                            "vi-VN",
-                                                        )}{" "}
-                                                        VND
-                                                    </h6>
-                                                </div>
+                                                {isDiscountApplied && (
+                                                    <div className="d-flex justify-content-between line pb_20">
+                                                        <h6
+                                                            className="fw-5"
+                                                            style={{
+                                                                marginBottom:
+                                                                    "20px",
+                                                            }}
+                                                        >
+                                                            Giảm giá:
+                                                        </h6>
+                                                        <h6 className="fw-5">
+                                                            -{" "}
+                                                            {discount.toLocaleString(
+                                                                "vi-VN",
+                                                            )}{" "}
+                                                            VND
+                                                        </h6>
+                                                    </div>
+                                                )}
+                                                {isPoint && (
+                                                    <div className="d-flex justify-content-between line pb_20">
+                                                        <h6
+                                                            className="fw-5"
+                                                            style={{
+                                                                marginBottom:
+                                                                    "20px",
+                                                            }}
+                                                        >
+                                                            Điểm tích lũy :
+                                                        </h6>
+                                                        <h6 className="fw-5">
+                                                            -{" "}
+                                                            {(
+                                                                pointsToUse *
+                                                                1000
+                                                            ).toLocaleString(
+                                                                "vi-VN",
+                                                            )}{" "}
+                                                            VND
+                                                        </h6>
+                                                    </div>
+                                                )}
                                                 <div className="d-flex justify-content-between line pb_20">
                                                     <h6
                                                         className="fw-5"
@@ -904,9 +928,9 @@ const Pay: React.FC = () => {
                                             alignItems: "center",
                                         }}
                                     >
-                                        <span style={{ color: "red" }}>
+                                        {/* <span style={{ color: "red" }}>
                                             Dùng ngay
-                                        </span>
+                                        </span> */}
                                         <Button
                                             type="link"
                                             onClick={() =>
