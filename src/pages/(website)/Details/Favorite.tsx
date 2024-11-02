@@ -25,6 +25,10 @@ interface Favorite {
     product: Product;
 }
 
+
+
+
+
 const FavoritesList = () => {
     const [favorites, setFavorites] = useState<Favorite[]>([]);
     const [loading, setLoading] = useState(true);
@@ -48,7 +52,13 @@ const FavoritesList = () => {
                             Authorization: `Bearer ${token}`,
                         },
                     },
+
+
+                    
                 );
+
+updateLocalStorageFavorite(response.data);
+
 
                 if (Array.isArray(response.data)) {
                     setFavorites(response.data);
@@ -61,10 +71,25 @@ const FavoritesList = () => {
             } finally {
                 setLoading(false);
             }
+
         };
 
         fetchFavorites();
     }, []);
+
+
+     const updateLocalStorageFavorite = (favorite: Favorite[]) => {
+         localStorage.setItem("favorite", JSON.stringify(favorite));
+         window.dispatchEvent(new Event("storage"));
+     };
+
+
+
+
+
+
+
+
 
     const handleDelete = async (productId: string) => {
         const token = localStorage.getItem("authToken");
@@ -92,6 +117,7 @@ const FavoritesList = () => {
                     (item) => item.id_product !== Number(productId),
                 ),
             );
+            updateLocalStorageFavorite(favorites);
         } catch (error) {
             message.error("Không thể xóa sản phẩm yêu thích.");
             console.error("Error deleting favorite:", error);

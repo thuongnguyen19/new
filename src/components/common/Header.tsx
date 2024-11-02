@@ -9,12 +9,14 @@ import {
     HeartOutlined,
 } from "@ant-design/icons";
 import { Category, fetchCategorys } from "../../Interface/Category";
+import { number } from "joi";
 
 const Header: React.FC = () => {
     const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [cartCount, setCartCount] = useState<number>(0);
     const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+    const [favoritecount, setFavorite] = useState<number>(0);
 
     useEffect(() => {
         // Hàm tải danh mục sản phẩm
@@ -31,6 +33,11 @@ const Header: React.FC = () => {
         // Hàm tính tổng số lượng sản phẩm trong giỏ hàng
         const fetchCartCount = () => {
             const cartData = localStorage.getItem("cartItems");
+            const favoriteData = localStorage.getItem("favorite")
+            if (favoriteData) {
+                const favoriteItems = JSON.parse(favoriteData);
+                setFavorite(favoriteItems.length);
+            }   
             if (cartData) {
                 const cartItems = JSON.parse(cartData);
 
@@ -44,6 +51,7 @@ const Header: React.FC = () => {
                 setCartCount(totalQuantity); 
             }
         };
+        
 
         const token = localStorage.getItem("authToken");
         if (token) {
@@ -60,6 +68,13 @@ const Header: React.FC = () => {
             window.removeEventListener("storage", fetchCartCount);
         };
     }, []);
+
+    
+
+
+
+
+    
 
     return (
         <header id="header" className="header-default">
@@ -147,10 +162,11 @@ const Header: React.FC = () => {
                             <li className="nav-cart">
                                 <Link to="/favorite" className="nav-icon-item">
                                     <HeartOutlined
+
                                         style={{ fontSize: "24px" }}
                                     />
                                     <span className="count-box">
-                                        {/* {cartCount} */}
+                                        {favoritecount}
                                     </span>
                                 </Link>
                             </li>

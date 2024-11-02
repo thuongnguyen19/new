@@ -10,6 +10,13 @@ import { Navigation } from "swiper/modules";
 
 
 // Interfaces
+interface Favorite {
+    id: number;
+    id_user: number;
+    id_product: number;
+    product: Product;
+}
+
 interface Image {
     id_product: number;
     id_attribute_color: number;
@@ -322,17 +329,17 @@ const Detail: React.FC = () => {
          if (!token) return;
 
          // Lấy trạng thái yêu thích từ localStorage
-         const localFavoriteStatus = localStorage.getItem(
-             `isFavorite_${product}`,
-         );
+         const localFavoriteStatus = localStorage.getItem(`isFavorite_${id}`);
          if (localFavoriteStatus) {
              setIsFavorite(localFavoriteStatus === "true");
          }
 
+         
+
          const checkFavoriteStatus = async () => {
              try {
                  const response = await axios.get(
-                     `http://127.0.0.1:8000/api/favoriteProduct/check?product_id=${product}`,
+                     `http://127.0.0.1:8000/api/favoriteProduct/check?product_id=${id}`,
                      {
                          headers: {
                              Authorization: `Bearer ${token}`,
@@ -342,7 +349,7 @@ const Detail: React.FC = () => {
                  setIsFavorite(response.data.is_favorite);
                  // Cập nhật trạng thái yêu thích vào localStorage
                  localStorage.setItem(
-                     `isFavorite_${product}`,
+                     `isFavorite_${id}`,
                      response.data.is_favorite.toString(),
                  );
              } catch (error) {
@@ -352,6 +359,13 @@ const Detail: React.FC = () => {
 
          checkFavoriteStatus();
      }, [product]);
+
+
+      const updateLocalStorageFavorite = (favorite: Favorite[]) => {
+          localStorage.setItem("favorite", JSON.stringify(favorite));
+          window.dispatchEvent(new Event("storage"));
+      };
+
 
      // Phần xử lý khi nhấn vào biểu tượng trái tim
      const handleAddProductToFavorite = async (productId: number) => {
@@ -364,16 +378,16 @@ const Detail: React.FC = () => {
 
          try {
              // Kiểm tra trạng thái yêu thích
-             const checkResponse = await axios.get(
-                 `http://127.0.0.1:8000/api/favoriteProduct/check?product_id=${productId}`,
-                 {
-                     headers: {
-                         Authorization: `Bearer ${token}`,
-                     },
-                 },
-             );
+            //  const checkResponse = await axios.get(
+            //      `http://127.0.0.1:8000/api/favoriteProduct/check?product_id=${productId}`,
+            //      {
+            //          headers: {
+            //              Authorization: `Bearer ${token}`,
+            //          },
+            //      },
+            //  );
 
-             if (checkResponse.data.is_favorite) {
+             if (isFavorite) {
                  // Xóa khỏi danh sách yêu thích nếu đã yêu thích
                  await axios.delete(
                      `http://127.0.0.1:8000/api/favoriteProduct/${productId}`,
@@ -387,16 +401,41 @@ const Detail: React.FC = () => {
                  localStorage.setItem(`isFavorite_${product}`, "false");
                  message.success("Đã xóa sản phẩm khỏi danh sách yêu thích.");
              } else {
+
+
                  // Thêm vào danh sách yêu thích nếu chưa yêu thích
-                 await axios.post(
+             const  report =  await  axios.post (
                      "http://127.0.0.1:8000/api/favoriteProduct",
                      { product_id: productId },
                      {
                          headers: {
                              Authorization: `Bearer ${token}`,
                          },
+
+
+
+
+
+
+                         
                      },
                  );
+
+                  if (report.data.status) {
+                      const cartItems = JSON.parse(
+                          localStorage.getItem("favorite") || "[]",
+                      );
+                      cartItems.push(report);
+                      localStorage.setItem("favorite", JSON.stringify(report));
+
+                      window.dispatchEvent(new Event("storage"));
+
+                      message.success("Thêm vào san pham yeu thich .");
+                  } 
+
+
+updateLocalStorageFavorite
+
                  setIsFavorite(true);
                  localStorage.setItem(`isFavorite_${product}`, "true");
                  message.success("Đã thêm sản phẩm vào danh sách yêu thích.");
@@ -405,6 +444,13 @@ const Detail: React.FC = () => {
              message.error(
                  "Có lỗi xảy ra khi thêm hoặc xóa sản phẩm yêu thích",
              );
+
+
+
+
+
+
+             
              console.error("Lỗi:", error);
          }
      };

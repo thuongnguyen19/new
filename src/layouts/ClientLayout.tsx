@@ -14,13 +14,14 @@ import {
 import axios from "axios";
 import Home from "../pages/(website)/home/page";
 import { Category, fetchCategorys } from "../Interface/Category";
+import { number } from "joi";
 
 const Layoutweb: React.FC = () => {
     const navigate = useNavigate();
     const [messageAPI, contextHolder] = message.useMessage();
     const [user, setUser] = useState<{ name: string } | null>(null); // Lưu thông tin người dùng
     const [isAuthenticated, setIsAuthenticated] = useState(false); // Kiểm tra người dùng đăng nhập
-
+const [favorite, setFavorite] = useState<number>(0);
     const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
 
@@ -65,6 +66,11 @@ const Layoutweb: React.FC = () => {
         // Tính tổng số lượng sản phẩm trong giỏ hàng từ localStorage
         const fetchCartCount = () => {
             const cartData = localStorage.getItem("cartItems");
+             const favoriteData = localStorage.getItem("favorite");
+             if (favoriteData) {
+                 const favoriteItems = JSON.parse(favoriteData);
+                 setFavorite(favoriteItems.length);
+             } 
             if (cartData) {
                 const cartItems = JSON.parse(cartData);
 
@@ -215,10 +221,18 @@ const Layoutweb: React.FC = () => {
                                                 />
                                             </a>
                                         </li>
-                                        <li className="nav-search">
-                                            <HeartOutlined
-                                                style={{ fontSize: "25px", color: "white" }}
-                                            />
+                                        <li className="nav-cart">
+                                            <Link
+                                                to="/favorite"
+                                                className="nav-icon-item"
+                                            >
+                                                <HeartOutlined
+                                                    style={{ fontSize: "24px" }}
+                                                />
+                                                <span className="count-box">
+                                                    {favorite}
+                                                </span>
+                                            </Link>
                                         </li>
                                         <li className="nav-account">
                                             {isAuthenticated ? (
