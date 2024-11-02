@@ -6,6 +6,7 @@ import Footer from "../components/common/Footer";
 import { message } from "antd";
 import {
     CaretDownOutlined,
+    HeartOutlined,
     SearchOutlined,
     ShoppingCartOutlined,
     UserOutlined,
@@ -213,6 +214,11 @@ const Layoutweb: React.FC = () => {
                                                     style={{ fontSize: "24px" }}
                                                 />
                                             </a>
+                                        </li>
+                                        <li className="nav-search">
+                                            <HeartOutlined
+                                                style={{ fontSize: "25px", color: "white" }}
+                                            />
                                         </li>
                                         <li className="nav-account">
                                             {isAuthenticated ? (

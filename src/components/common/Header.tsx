@@ -6,6 +6,7 @@ import {
     ShoppingCartOutlined,
     MenuOutlined,
     CaretDownOutlined,
+    HeartOutlined,
 } from "@ant-design/icons";
 import { Category, fetchCategorys } from "../../Interface/Category";
 
@@ -142,6 +143,16 @@ const Header: React.FC = () => {
                                         style={{ fontSize: "24px" }}
                                     />
                                 </a>
+                            </li>
+                            <li className="nav-cart">
+                                <Link to="/favorite" className="nav-icon-item">
+                                    <HeartOutlined
+                                        style={{ fontSize: "24px" }}
+                                    />
+                                    <span className="count-box">
+                                        {/* {cartCount} */}
+                                    </span>
+                                </Link>
                             </li>
 
                             <li className="nav-user">

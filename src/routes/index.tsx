@@ -16,6 +16,7 @@ import ProductList from "../pages/(website)/listProducts/Filter";
 import { useEffect } from "react";
 import ListComments from "../pages/(website)/Comments/ListComments";
 import Coupons from "../pages/(website)/Pay/Coupons";
+import Favorite from "../pages/(website)/Details/favorite";
 
 const Router = () => {
     const navigate = useNavigate();
@@ -47,6 +48,7 @@ const Router = () => {
 
                 <Route path="/" element={<Layoutweb />}></Route>
                 <Route path="cart" element={<ListCart />} />
+                <Route path="favorite" element={< Favorite />} />
 
                 <Route path="detail/:id" element={<Detail />} />
                 <Route path="od_detail" element={<Od_Detail />} />
