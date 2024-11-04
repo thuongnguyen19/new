@@ -57,6 +57,8 @@ const FavoritesList = () => {
                     
                 );
 
+
+                
 updateLocalStorageFavorite(response.data);
 
 
@@ -112,12 +114,24 @@ updateLocalStorageFavorite(response.data);
             message.success(response.data.message);
 
             // Cập nhật lại danh sách sản phẩm yêu thích
-            setFavorites((prevFavorites) =>
-                prevFavorites.filter(
-                    (item) => item.id_product !== Number(productId),
-                ),
-            );
-            updateLocalStorageFavorite(favorites);
+          
+
+            
+                             const favoriteData = JSON.parse(
+                                 localStorage.getItem("favorite") || "",
+                             );
+
+                             const favorites = favoriteData.filter(
+                                 (item) => item.id_product !== productId,
+                             );
+                               setFavorites(favorites   )
+                             console.log(favorites);
+
+                             updateLocalStorageFavorite(favorites);
+
+
+
+
         } catch (error) {
             message.error("Không thể xóa sản phẩm yêu thích.");
             console.error("Error deleting favorite:", error);
@@ -148,10 +162,10 @@ updateLocalStorageFavorite(response.data);
                     <Col span={6} key={item.id}>
                         {" "}
                         {/* Đặt span là 6 để có 4 sản phẩm mỗi hàng */}
-                        <Card
+                        <Card 
                             hoverable
                             cover={
-                                <img
+                                <img style={{height : 400}}
                                     alt={item.product.name}
                                     src={item.product.thumbnail}
                                 />

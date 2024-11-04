@@ -7,6 +7,7 @@ import { message } from "antd";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { HeartOutlined, LeftOutlined, RightOutlined } from "@ant-design/icons";
 import { Navigation } from "swiper/modules";
+import { set } from "lodash";
 
 
 // Interfaces
@@ -109,18 +110,24 @@ const Detail: React.FC = () => {
 
     // Fetch sản phẩm và sản phẩm liên quan khi id thay đổi
     useEffect(() => {
+ setLoading(true);
+       
         const fetchProductDetails = async () => {
             try {
                 const response = await axios.get(
                     `http://localhost:8000/api/detailProduct/${id}`,
                 );
                 const productData: Product = response.data.data;
+                  console.log(productData);
 
                 if (productData) {
                     setProduct(productData);
+              
+                    
                     setAverageRating(productData.averageRating);
                     setComments(productData.comments); // Gán danh sách đánh giá
                     fetchRelatedProducts(productData.id);
+                    
 
                     // Lấy giá nhỏ nhất từ các biến thể sản phẩm
                     const minVariant = productData.variant.reduce(
@@ -130,6 +137,7 @@ const Detail: React.FC = () => {
                                 ? prev
                                 : curr,
                     );
+                    
                     const minListVariant = productData.variant.reduce(
                         (prev, curr) =>
                             parseFloat(prev.list_price) <
@@ -151,6 +159,9 @@ const Detail: React.FC = () => {
             }
         };
 
+
+
+        
         const fetchRelatedProducts = async (categoryId: number) => {
             try {
                 const response = await axios.get(
@@ -161,7 +172,6 @@ const Detail: React.FC = () => {
                 console.error("Failed to fetch related products", err);
             }
         };
-
         fetchProductDetails();
     }, [id]);
 
@@ -398,7 +408,24 @@ const Detail: React.FC = () => {
                      },
                  );
                  setIsFavorite(false);
+                 
+                             const favoriteData = JSON.parse(
+                                 localStorage.getItem("favorite") || "",
+                             );
+
+                                 const favorites = favoriteData.filter((item) => item.id_product !== productId)
+console.log(favorites);
+
+
+                                 updateLocalStorageFavorite(favorites);
+
+
+
+
+
+
                  localStorage.setItem(`isFavorite_${product}`, "false");
+
                  message.success("Đã xóa sản phẩm khỏi danh sách yêu thích.");
              } else {
 
@@ -421,20 +448,19 @@ const Detail: React.FC = () => {
                      },
                  );
 
-                  if (report.data.status) {
+             
                       const cartItems = JSON.parse(
                           localStorage.getItem("favorite") || "[]",
                       );
-                      cartItems.push(report);
-                      localStorage.setItem("favorite", JSON.stringify(report));
+                      cartItems.push({ id_product: productId });
+                      localStorage.setItem("favorite", JSON.stringify(cartItems));
 
                       window.dispatchEvent(new Event("storage"));
 
-                      message.success("Thêm vào san pham yeu thich .");
-                  } 
+                  
 
 
-updateLocalStorageFavorite
+
 
                  setIsFavorite(true);
                  localStorage.setItem(`isFavorite_${product}`, "true");
@@ -451,8 +477,7 @@ updateLocalStorageFavorite
 
 
              
-             console.error("Lỗi:", error);
-         }
+             }
      };
 
     // useEffect(() => {
@@ -642,7 +667,7 @@ updateLocalStorageFavorite
                                             }}
                                         >
                                             {getCombinedImages().map(
-                                                (image, index) => (
+                                                (image: any, index: any) => (
                                                     <SwiperSlide key={index}>
                                                         <img
                                                             src={getFullImagePath(
@@ -674,7 +699,7 @@ updateLocalStorageFavorite
                                             ref={thumbSwiperRef}
                                         >
                                             {getCombinedImages().map(
-                                                (image, index) => (
+                                                (image: any, index: any) => (
                                                     <SwiperSlide key={index}>
                                                         <img
                                                             src={getFullImagePath(
@@ -1223,34 +1248,38 @@ updateLocalStorageFavorite
                                                                 >
                                                                     <div className="card-product">
                                                                         <div className="card-product-wrapper">
-                                                                            <Link
-                                                                                to={`/detail/${relatedProduct.id}`}
+                                                                            <a
+                                                                                href={`/detail/${relatedProduct.id}`}
                                                                             >
-                                                                                <img
-                                                                                    src={getFullImagePath(
-                                                                                        relatedProduct.thumbnail,
-                                                                                    )}
-                                                                                    alt={
-                                                                                        relatedProduct.name
-                                                                                    }
-                                                                                    style={{
-                                                                                        width: "600px",
-                                                                                        height: "450px",
-                                                                                        objectFit:
-                                                                                            "cover",
-                                                                                    }}
-                                                                                />
-                                                                            </Link>
+                                                                                {" "}
+                                                                                {/* <Link
+                                                                                    to={`/detail/${relatedProduct.id}`}
+                                                                                > */}
+                                                                                    <img
+                                                                                        src={getFullImagePath(
+                                                                                            relatedProduct.thumbnail,
+                                                                                        )}
+                                                                                        alt={
+                                                                                            relatedProduct.name
+                                                                                        }
+                                                                                        style={{
+                                                                                            width: "600px",
+                                                                                            height: "450px",
+                                                                                            objectFit:
+                                                                                                "cover",
+                                                                                        }}
+                                                                                    />
+                                                                                {/* </Link> */}
+                                                                            </a>
                                                                         </div>
                                                                         <div className="card-product-info text-center">
-                                                                            <Link
-                                                                                to={`/detail/${relatedProduct.id}`}
-                                                                                className="title link"
+                                                                          <a
+                                                                                href={`/detail/${relatedProduct.id}`}
                                                                             >
                                                                                 {
                                                                                     relatedProduct.name
                                                                                 }
-                                                                            </Link>
+                                                                            </a>
                                                                             {relatedProduct
                                                                                 .variant
                                                                                 .length >

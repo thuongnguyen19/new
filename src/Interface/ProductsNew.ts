@@ -1,5 +1,6 @@
 import axiosInstance from "../configs/axios";
 export interface ProductsNew{
+  isFavorite: any;
   id: number;
   name: string;
   thumbnail: string;

@@ -1,16 +1,26 @@
-import React, { useEffect, useState } from 'react';
-import { Swiper, Swiper as SwiperComponent, SwiperSlide } from 'swiper/react';
-import { Navigation } from 'swiper/modules';
-import { CreditCardOutlined, CustomerServiceOutlined, InboxOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons';
-import { Link, useNavigate } from 'react-router-dom';
-import 'swiper/css';
-import 'swiper/css/navigation';
-import { fetchProductsNew, ProductsNew } from '../../../Interface/ProductsNew';
+import React, { useEffect, useState } from "react";
+import { Swiper, Swiper as SwiperComponent, SwiperSlide } from "swiper/react";
+import { Navigation } from "swiper/modules";
+import {
+    CreditCardOutlined,
+    CustomerServiceOutlined,
+    HeartOutlined,
+    InboxOutlined,
+    LeftOutlined,
+    RightOutlined,
+} from "@ant-design/icons";
+import { Link, useNavigate } from "react-router-dom";
+import "swiper/css";
+import "swiper/css/navigation";
+import { fetchProductsNew, ProductsNew } from "../../../Interface/ProductsNew";
+import axios from "axios";
+import { message } from "antd";
 
 const Home: React.FC = () => {
     const [productsnew, setProductsNew] = useState<ProductsNew[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [sortByPrice, setSortByPrice] = useState<"asc" | "desc">("asc");
+    const [favorites, setFavorites] = useState<number[]>([]);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -20,27 +30,116 @@ const Home: React.FC = () => {
                 setProductsNew(data);
             } catch (error) {
                 console.error("Error fetching productsnew:", error);
-
             }
             setLoading(false);
         };
 
+        const loadFavorites = async () => {
+            const token = localStorage.getItem("authToken");
+            if (!token) return;
+
+            try {
+                const response = await axios.get(
+                    "http://127.0.0.1:8000/api/favoriteProduct",
+                    {
+                        headers: { Authorization: `Bearer ${token}` },
+                    },
+                );
+                setFavorites(
+                    response.data.map(
+                        (fav: { id_product: number }) => fav.id_product,
+                    ),
+                );
+            } catch (error) {
+                console.error("Error fetching favorites:", error);
+            }
+        };
+
         loadProductsNew();
+        loadFavorites();
     }, []);
+
+    const updateLocalStorageFavorite = (updatedFavorites: any[]) => {
+        localStorage.setItem("favorite", JSON.stringify(updatedFavorites));
+        window.dispatchEvent(new Event("storage"));
+    };
+
+    const handleFavoriteToggle = async (productId: number) => {
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+            message.error(
+                "Vui lòng đăng nhập để thêm sản phẩm vào danh sách yêu thích.",
+            );
+            navigate("/login");
+            return;
+        }
+
+        const isFavorite = favorites.includes(productId);
+
+        try {
+            if (isFavorite) {
+                // Xóa khỏi danh sách yêu thích
+                await axios.delete(
+                    `http://127.0.0.1:8000/api/favoriteProduct/${productId}`,
+                    {
+                        headers: { Authorization: `Bearer ${token}` },
+                    },
+                );
+                setFavorites(favorites.filter((id) => id !== productId));
+
+                // Cập nhật localStorage
+                const favoriteData = JSON.parse(
+                    localStorage.getItem("favorite") || "[]",
+                );
+                const updatedFavorites = favoriteData.filter(
+                    (item: { id_product: number }) =>
+                        item.id_product !== productId,
+                );
+                updateLocalStorageFavorite(updatedFavorites);
+
+                localStorage.setItem(`isFavorite_${productId}`, "false");
+                message.success("Đã xóa sản phẩm khỏi danh sách yêu thích.");
+            } else {
+                // Thêm vào danh sách yêu thích
+                await axios.post(
+                    "http://127.0.0.1:8000/api/favoriteProduct",
+                    { product_id: productId },
+                    {
+                        headers: { Authorization: `Bearer ${token}` },
+                    },
+                );
+                setFavorites([...favorites, productId]);
+
+                // Cập nhật localStorage
+                const favoriteData = JSON.parse(
+                    localStorage.getItem("favorite") || "[]",
+                );
+                favoriteData.push({ id_product: productId });
+                updateLocalStorageFavorite(favoriteData);
+
+                localStorage.setItem(`isFavorite_${productId}`, "true");
+                message.success("Đã thêm sản phẩm vào danh sách yêu thích.");
+            }
+        } catch (error) {
+            message.error(
+                "Có lỗi xảy ra khi thêm hoặc xóa sản phẩm yêu thích.",
+            );
+        }
+    };
 
     const Price = () => {
         const sortedProducts = [...productsnew].sort((a, b) =>
             sortByPrice === "asc"
                 ? a.variants[0].selling_price - b.variants[0].selling_price
-                : b.variants[0].selling_price - a.variants[0].selling_price
+                : b.variants[0].selling_price - a.variants[0].selling_price,
         );
         setProductsNew(sortedProducts);
         setSortByPrice(sortByPrice === "asc" ? "desc" : "asc");
     };
 
     const handleProductClick = (id: number) => {
-    navigate(`/detail/${id}`);
-  };
+        navigate(`/detail/${id}`);
+    };
 
     if (loading) {
         return <p>Đang tải...</p>;
@@ -117,8 +216,14 @@ const Home: React.FC = () => {
                                                         <div className="card-product style-skincare">
                                                             <div className="card-product-wrapper">
                                                                 <div
-                                                                    onClick={() => handleProductClick(product.id)}
-                                                                    style={{ cursor: "pointer" }}
+                                                                    onClick={() =>
+                                                                        handleProductClick(
+                                                                            product.id,
+                                                                        )
+                                                                    }
+                                                                    style={{
+                                                                        cursor: "pointer",
+                                                                    }}
                                                                     className="product-img"
                                                                 >
                                                                     <img
@@ -138,50 +243,82 @@ const Home: React.FC = () => {
                                                             </div>
                                                             <div className="card-product-info text-center">
                                                                 <h3
-                                                                onClick={() => handleProductClick(product.id)}
-                                                                style={{ cursor: "pointer" }}
-                                                                className="title link"
-                                                            >
-                                                                {product.name}
-                                                            </h3>
-                                                            <div>
-                                                            <span
-                                                                            style={{
-                                                                                fontWeight:
-                                                                                    "bold",
-                                                                                color: "#f00",
-                                                                            }}
-                                                                        >
-                                                                            {product.variants[0]?.selling_price?.toLocaleString(
-                                                                                "vi-VN", {
+                                                                    onClick={() =>
+                                                                        handleProductClick(
+                                                                            product.id,
+                                                                        )
+                                                                    }
+                                                                    style={{
+                                                                        cursor: "pointer",
+                                                                    }}
+                                                                    className="title link"
+                                                                >
+                                                                    {
+                                                                        product.name
+                                                                    }
+                                                                </h3>
+
+                                                                <HeartOutlined
+                                                                    onClick={() =>
+                                                                        handleFavoriteToggle(
+                                                                            product.id,
+                                                                        )
+                                                                    }
+                                                                    style={{
+                                                                        fontSize:
+                                                                            "35px",
+                                                                        color: favorites.includes(
+                                                                            product.id,
+                                                                        )
+                                                                            ? "red"
+                                                                            : undefined,// Nếu có trong favorites, màu sẽ là đỏ
+                                                                        cursor: "pointer",
+                                                                        transition:
+                                                                            "color 0.3s ease", // Thêm hiệu ứng chuyển đổi
+                                                                    }}
+                                                                />
+
+                                                                <div>
+                                                                    <span
+                                                                        style={{
+                                                                            fontWeight:
+                                                                                "bold",
+                                                                            color: "#f00",
+                                                                        }}
+                                                                    >
+                                                                        {product.variants[0]?.selling_price?.toLocaleString(
+                                                                            "vi-VN",
+                                                                            {
                                                                                 style: "currency",
-                                                                                currency: "VND",
-                                                                                minimumFractionDigits: 0,  // Loại bỏ .00
-                                                                                maximumFractionDigits: 0,  // Loại bỏ .00
-                                                                            }
-                                                                            )}{" "}
-                                                                            đ
-                                                                        </span>
-                                                                        <span
-                                                                            style={{
-                                                                                textDecoration:
-                                                                                    "line-through",
-                                                                                color: "#999",
-                                                                            }}
-                                                                        >
-                                                                            {product.variants[0]?.list_price?.toLocaleString(
-                                                                                "vi-VN", {
-                                                                                    style: "currency",
-                                                                                    currency: "VND",
-                                                                                    minimumFractionDigits: 0,  // Loại bỏ .00
-                                                                                    maximumFractionDigits: 0,  // Loại bỏ .00
-                                                                                }
-                                                                            )}{" "}
-                                                                            đ
-                                                                        </span>
-                                                                        </div>
-                                                            
-                                                            
+                                                                                currency:
+                                                                                    "VND",
+                                                                                minimumFractionDigits: 0, // Loại bỏ .00
+                                                                                maximumFractionDigits: 0, // Loại bỏ .00
+                                                                            },
+                                                                        )}{" "}
+                                                                        đ
+                                                                    </span>
+                                                                    <span
+                                                                        style={{
+                                                                            textDecoration:
+                                                                                "line-through",
+                                                                            color: "#999",
+                                                                        }}
+                                                                    >
+                                                                        {product.variants[0]?.list_price?.toLocaleString(
+                                                                            "vi-VN",
+                                                                            {
+                                                                                style: "currency",
+                                                                                currency:
+                                                                                    "VND",
+                                                                                minimumFractionDigits: 0, // Loại bỏ .00
+                                                                                maximumFractionDigits: 0, // Loại bỏ .00
+                                                                            },
+                                                                        )}{" "}
+                                                                        đ
+                                                                    </span>
+                                                                </div>
+
                                                                 {/* <span className="price">Giá cũ: {product.variants[0]?.list_price.toLocaleString()} VND</span> */}
                                                             </div>
                                                         </div>
@@ -526,8 +663,6 @@ const Home: React.FC = () => {
                 </div>
             </section>
 
-           
-
             <section className="flat-spacing-1 flat-iconbox">
                 <div className="container">
                     <div
@@ -600,7 +735,6 @@ const Home: React.FC = () => {
             </div>
         </>
     );
-
 };
 
 export default Home;
